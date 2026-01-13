@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Instagram, Facebook } from "lucide-react";
 import { motion } from "framer-motion";
+import { PaymentIcons } from "./PaymentIcons";
 
 const footerLinks = {
   company: [
@@ -190,10 +191,10 @@ export const Footer = () => {
 
         {/* Divider */}
         <div className="border-t border-white/10 mt-16 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
             {/* Copyright */}
             <p className="text-neutral-500 text-xs font-sans font-light">
-              © 2024 OAK &amp; ASH. All rights reserved.
+              © 2026 OAK &amp; ASH. All rights reserved.
             </p>
             
             {/* Currency & Payment */}
@@ -203,19 +204,11 @@ export const Footer = () => {
                 <option value="usd" className="bg-neutral-900 text-white">USD $</option>
                 <option value="eur" className="bg-neutral-900 text-white">EUR €</option>
                 <option value="gbp" className="bg-neutral-900 text-white">GBP £</option>
+                <option value="inr" className="bg-neutral-900 text-white">INR ₹</option>
               </select>
               
               {/* Payment Icons */}
-              <div className="flex items-center gap-2">
-                <span className="text-neutral-500 text-xs font-sans">We accept:</span>
-                <div className="flex gap-2 text-[10px] text-neutral-400">
-                  <span className="px-2 py-1 border border-white/15">Visa</span>
-                  <span className="px-2 py-1 border border-white/15">Mastercard</span>
-                  <span className="px-2 py-1 border border-white/15">Amex</span>
-                  <span className="px-2 py-1 border border-white/15">PayPal</span>
-                  <span className="px-2 py-1 border border-white/15">Apple Pay</span>
-                </div>
-              </div>
+              <PaymentIcons />
             </div>
           </div>
         </div>
