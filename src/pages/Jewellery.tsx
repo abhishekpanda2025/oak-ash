@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { CartDrawer } from "@/components/cart/CartDrawer";
+import { LocalCartDrawer } from "@/components/cart/LocalCartDrawer";
 import { ProductCard } from "@/components/products/ProductCard";
 import { getProducts, type ShopifyProduct } from "@/lib/shopify";
 import { Loader2, SlidersHorizontal } from "lucide-react";
@@ -52,7 +52,7 @@ const Jewellery = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <CartDrawer />
+      <LocalCartDrawer />
 
       <main className="pt-32 pb-20">
         <div className="container-luxury">

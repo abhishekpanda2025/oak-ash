@@ -110,10 +110,14 @@ const paymentMethods = [
   },
 ];
 
-export const PaymentIcons = () => {
+interface PaymentIconsProps {
+  dark?: boolean;
+}
+
+export const PaymentIcons = ({ dark = false }: PaymentIconsProps) => {
   return (
     <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
-      <span className="text-neutral-500 text-xs font-sans mr-1">We accept:</span>
+      <span className={`text-xs font-sans mr-1 ${dark ? "text-neutral-300" : "text-neutral-500"}`}>We accept:</span>
       <div className="flex gap-1.5 flex-wrap">
         {paymentMethods.map((payment, index) => (
           <motion.div
@@ -123,7 +127,7 @@ export const PaymentIcons = () => {
             viewport={{ once: true }}
             transition={{ delay: index * 0.05, duration: 0.3 }}
             whileHover={{ scale: 1.1, y: -2 }}
-            className="bg-white rounded px-1.5 py-1 shadow-sm cursor-default"
+            className="bg-white rounded px-1.5 py-1 shadow-md cursor-default border border-neutral-200"
             title={payment.name}
           >
             {payment.svg}

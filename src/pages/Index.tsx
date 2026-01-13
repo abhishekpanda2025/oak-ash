@@ -1,6 +1,6 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { CartDrawer } from "@/components/cart/CartDrawer";
+import { LocalCartDrawer } from "@/components/cart/LocalCartDrawer";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { CraftsmanshipSection } from "@/components/home/CraftsmanshipSection";
@@ -15,7 +15,7 @@ const Index = () => {
     <PageTransition>
       <div className="min-h-screen bg-background">
         <Header />
-        <CartDrawer />
+        <LocalCartDrawer />
         <NewsletterPopup />
         <main>
           <HeroSection />

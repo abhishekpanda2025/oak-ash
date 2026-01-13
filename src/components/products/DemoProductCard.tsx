@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Eye, ShoppingBag, Check } from "lucide-react";
 import { DemoProduct } from "@/data/demoProducts";
 import { useWishlistStore } from "@/stores/wishlistStore";
+import { useLocalCartStore } from "@/stores/localCartStore";
 import { toast } from "sonner";
 
 // Import sample images
@@ -37,6 +38,7 @@ export const DemoProductCard = ({ product, index = 0, onQuickView }: DemoProduct
   const [isAdded, setIsAdded] = useState(false);
   
   const { addItem, removeItem, isInWishlist } = useWishlistStore();
+  const { addItem: addToCart } = useLocalCartStore();
   const isWishlisted = isInWishlist(product.id);
   
   const productImage = getProductImage(product, index);
@@ -64,7 +66,8 @@ export const DemoProductCard = ({ product, index = 0, onQuickView }: DemoProduct
     e.preventDefault();
     e.stopPropagation();
     setIsAdded(true);
-    toast.success("Added to cart!", {
+    addToCart(product, 1);
+    toast.success("Added to bag!", {
       description: product.title,
       position: "top-center",
     });

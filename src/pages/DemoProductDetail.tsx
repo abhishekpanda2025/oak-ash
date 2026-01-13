@@ -19,11 +19,12 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { CartDrawer } from "@/components/cart/CartDrawer";
+import { LocalCartDrawer } from "@/components/cart/LocalCartDrawer";
 import { Button } from "@/components/ui/button";
 import { DemoProductCard } from "@/components/products/DemoProductCard";
 import { PageTransition, ScrollReveal } from "@/components/animations/PageTransition";
 import { getProductByHandle, demoProducts, DemoProduct } from "@/data/demoProducts";
+import { useLocalCartStore } from "@/stores/localCartStore";
 import { toast } from "sonner";
 
 // Import images
@@ -93,6 +94,8 @@ const DemoProductDetail = () => {
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
+  const { addItem: addToCart } = useLocalCartStore();
+
   const handleAddToCart = () => {
     if (!product) return;
     
@@ -101,7 +104,8 @@ const DemoProductDetail = () => {
     setTimeout(() => {
       setIsAdding(false);
       setIsAdded(true);
-      toast.success("Added to cart!", {
+      addToCart(product, quantity);
+      toast.success("Added to bag!", {
         description: `${product.title} × ${quantity}`,
         position: "top-center",
       });
@@ -127,7 +131,7 @@ const DemoProductDetail = () => {
       <PageTransition>
         <div className="min-h-screen bg-background">
           <Header />
-          <CartDrawer />
+          <LocalCartDrawer />
           <div className="flex flex-col items-center justify-center min-h-screen pt-32">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -153,7 +157,7 @@ const DemoProductDetail = () => {
     <PageTransition>
       <div className="min-h-screen bg-background">
         <Header />
-        <CartDrawer />
+        <LocalCartDrawer />
 
         {/* Zoom Modal */}
         <AnimatePresence>

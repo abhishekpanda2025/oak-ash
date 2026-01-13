@@ -208,7 +208,7 @@ export const Footer = () => {
               </select>
               
               {/* Payment Icons */}
-              <PaymentIcons />
+              <PaymentIcons dark />
             </div>
           </div>
         </div>
