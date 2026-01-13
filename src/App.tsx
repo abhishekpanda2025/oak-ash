@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/animations/LoadingScreen";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { useState, useEffect, useRef } from "react";
 import Index from "./pages/Index";
 import Jewellery from "./pages/Jewellery";
@@ -58,6 +59,7 @@ const AnimatedRoutes = () => {
 
   return (
     <>
+      <ScrollToTop />
       {isLoading && (
         <LoadingScreen onComplete={handleLoadingComplete} isNavigation={isNavigation} />
       )}
