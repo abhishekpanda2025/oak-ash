@@ -3,16 +3,16 @@ import { ShoppingBag, Minus, Plus, Trash2, X } from "lucide-react";
 import { useLocalCartStore } from "@/stores/localCartStore";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 // Import images for products
 import productNecklace from "@/assets/product-necklace.jpg";
 import productEarrings from "@/assets/product-earrings.jpg";
 import productRing from "@/assets/product-ring.jpg";
 import productBangle from "@/assets/product-bangle.jpg";
-import productPearlEarrings from "@/assets/product-pearl-earrings.jpg";
-import productSilverRings from "@/assets/product-silver-rings.jpg";
 import { DemoProduct } from "@/data/demoProducts";
 import { PaymentIcons } from "@/components/layout/PaymentIcons";
+import { SimilarProducts } from "@/components/products/SimilarProducts";
 
 // Get product image based on category
 const getProductImage = (product: DemoProduct): string => {
@@ -24,6 +24,7 @@ const getProductImage = (product: DemoProduct): string => {
 };
 
 export const LocalCartDrawer = () => {
+  const navigate = useNavigate();
   const {
     items,
     isOpen,
@@ -36,9 +37,8 @@ export const LocalCartDrawer = () => {
   } = useLocalCartStore();
 
   const handleCheckout = () => {
-    toast.success("Proceeding to checkout...", {
-      description: "This is a demo - connect Shopify for real checkout",
-    });
+    setOpen(false);
+    navigate("/checkout");
   };
 
   return (
@@ -200,6 +200,12 @@ export const LocalCartDrawer = () => {
                     ${getTotalPrice().toFixed(2)}
                   </span>
                 </div>
+
+                {/* Similar Products */}
+                <SimilarProducts 
+                  currentProduct={items[0]?.product} 
+                  title="Complete Your Look" 
+                />
 
                 {/* Payment Icons */}
                 <div className="flex items-center justify-center gap-2">
