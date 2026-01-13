@@ -46,7 +46,7 @@ export const CollectionShowcase = () => {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="section-padding bg-charcoal text-ivory">
+    <section ref={ref} className="section-padding bg-neutral-900">
       <div className="container-luxury">
         {/* Header */}
         <motion.div
@@ -56,16 +56,16 @@ export const CollectionShowcase = () => {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
           <div>
-            <p className="text-[11px] tracking-luxury uppercase text-gold mb-4 font-sans font-light">
+            <p className="text-xs tracking-luxury uppercase text-amber-400 mb-4 font-sans font-light">
               Shop by Collection
             </p>
-            <h2 className="font-serif text-headline">
+            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-white">
               Find Your Perfect Shade
             </h2>
           </div>
           <Link
             to="/jewellery"
-            className="group inline-flex items-center gap-2.5 text-[12px] tracking-wide-luxury uppercase font-sans mt-6 md:mt-0 text-ivory/60 hover:text-gold transition-colors duration-300"
+            className="group inline-flex items-center gap-2.5 text-xs tracking-wide uppercase font-sans mt-6 md:mt-0 text-neutral-400 hover:text-amber-400 transition-colors duration-300"
           >
             View All Collections
             <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -111,14 +111,14 @@ export const CollectionShowcase = () => {
                   </div>
                   
                   {/* Gold glow on hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-[inset_0_0_30px_hsl(var(--gold)/0.3)]" />
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-[inset_0_0_30px_rgba(212,184,106,0.3)]" />
                 </div>
                 
                 <div className="text-center">
-                  <h3 className="font-serif text-lg group-hover:text-gold transition-colors duration-300 mb-1">
+                  <h3 className="font-serif text-lg text-white group-hover:text-amber-400 transition-colors duration-300 mb-1">
                     {collection.name}
                   </h3>
-                  <p className="text-[11px] text-ivory/50 font-sans font-light">
+                  <p className="text-xs text-neutral-500 font-sans font-light">
                     {collection.description}
                   </p>
                 </div>

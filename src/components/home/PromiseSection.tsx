@@ -31,7 +31,7 @@ export const PromiseSection = () => {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="section-padding bg-cream-dark">
+    <section ref={ref} className="section-padding bg-neutral-100">
       <div className="container-luxury">
         <motion.div
           className="text-center mb-12"
@@ -39,11 +39,11 @@ export const PromiseSection = () => {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
         >
-          <p className="text-xs tracking-luxury uppercase text-primary mb-4 font-sans">
+          <p className="text-xs tracking-luxury uppercase text-amber-600 mb-4 font-sans">
             Our Promise
           </p>
-          <h2 className="font-serif text-3xl md:text-4xl font-medium">
-            The OAK & ASH Experience
+          <h2 className="font-serif text-3xl md:text-4xl font-medium text-neutral-800">
+            The OAK &amp; ASH Experience
           </h2>
         </motion.div>
 
@@ -57,13 +57,13 @@ export const PromiseSection = () => {
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
               <motion.div
-                className="inline-flex items-center justify-center w-16 h-16 border border-primary/30 mb-6"
-                whileHover={{ scale: 1.05, borderColor: "hsl(var(--primary))" }}
+                className="inline-flex items-center justify-center w-16 h-16 border border-amber-500/30 mb-6"
+                whileHover={{ scale: 1.05, borderColor: "rgb(245, 158, 11)" }}
               >
-                <promise.icon className="w-6 h-6 text-primary" />
+                <promise.icon className="w-6 h-6 text-amber-600" />
               </motion.div>
-              <h3 className="font-serif text-lg mb-2">{promise.title}</h3>
-              <p className="text-sm text-muted-foreground font-sans leading-relaxed">
+              <h3 className="font-serif text-lg mb-2 text-neutral-800">{promise.title}</h3>
+              <p className="text-sm text-neutral-600 font-sans leading-relaxed">
                 {promise.description}
               </p>
             </motion.div>

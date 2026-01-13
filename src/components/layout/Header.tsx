@@ -3,22 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, ShoppingBag, Heart, User, Menu, X, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
+import { useWishlistStore } from "@/stores/wishlistStore";
 import gsap from "gsap";
-
-// Category icons for the mega menu
-const categoryIcons: Record<string, string> = {
-  Rings: "💍",
-  Earrings: "✨",
-  Necklaces: "📿",
-  Bangles: "🔗",
-  Bracelets: "🔘",
-  "View All": "🛍️",
-};
 
 const navigationItems = [
   {
     label: "NEW IN",
-    href: "/new-in",
+    href: "/collection/new-in",
   },
   {
     label: "JEWELLERY",
@@ -33,11 +24,11 @@ const navigationItems = [
         { label: "View All", href: "/jewellery", icon: "🛍️" },
       ],
       collections: [
-        { label: "Gold", href: "/collections/gold" },
-        { label: "Silver", href: "/collections/silver" },
-        { label: "Two Tone", href: "/collections/two-tone" },
-        { label: "Stones", href: "/collections/stones" },
-        { label: "Fresh Water Pearl", href: "/collections/pearl" },
+        { label: "Gold", href: "/collection/gold" },
+        { label: "Silver", href: "/collection/silver" },
+        { label: "Two Tone", href: "/collection/two-tone" },
+        { label: "Stones", href: "/collection/stones" },
+        { label: "Fresh Water Pearl", href: "/collection/pearl" },
       ],
     },
   },
@@ -58,7 +49,9 @@ export const Header = () => {
   const headerRef = useRef<HTMLElement>(null);
   
   const { setOpen: setCartOpen, getTotalItems } = useCartStore();
+  const { items: wishlistItems } = useWishlistStore();
   const cartCount = getTotalItems();
+  const wishlistCount = wishlistItems.length;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -85,22 +78,18 @@ export const Header = () => {
       ref={headerRef}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
         isScrolled
-          ? "bg-background/95 backdrop-blur-xl shadow-soft border-b border-border/30"
+          ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-neutral-200"
           : "bg-transparent"
       }`}
     >
       {/* Announcement Bar */}
       <motion.div
-        className={`text-center py-2.5 px-4 transition-all duration-500 ${
-          isScrolled
-            ? "bg-charcoal text-ivory"
-            : "bg-charcoal/95 text-ivory"
-        }`}
+        className="text-center py-2.5 px-4 bg-neutral-900"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, duration: 0.6 }}
       >
-        <p className="text-[11px] tracking-luxury uppercase font-sans font-light">
+        <p className="text-[11px] tracking-luxury uppercase font-sans font-light text-white">
           Complimentary shipping on orders over $150
         </p>
       </motion.div>
@@ -110,7 +99,7 @@ export const Header = () => {
         <div className="flex items-center justify-between h-18 md:h-22 py-4">
           {/* Mobile Menu Toggle */}
           <button
-            className="lg:hidden p-2 -ml-2 icon-gold-hover"
+            className={`lg:hidden p-2 -ml-2 transition-colors ${isScrolled ? "text-neutral-800" : "text-white"}`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -124,11 +113,11 @@ export const Header = () => {
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
-              <span className={`transition-colors duration-500 ${isScrolled ? "text-foreground" : "text-foreground"}`}>
+              <span className={`transition-colors duration-500 ${isScrolled ? "text-neutral-800" : "text-white"}`}>
                 OAK
               </span>
-              <span className="text-primary mx-1">&</span>
-              <span className={`transition-colors duration-500 ${isScrolled ? "text-foreground" : "text-foreground"}`}>
+              <span className="text-amber-500 mx-1">&amp;</span>
+              <span className={`transition-colors duration-500 ${isScrolled ? "text-neutral-800" : "text-white"}`}>
                 ASH
               </span>
             </motion.h1>
@@ -145,7 +134,11 @@ export const Header = () => {
               >
                 <Link
                   to={item.href}
-                  className="flex items-center gap-1.5 py-8 text-[13px] tracking-wide-luxury uppercase font-sans font-light link-elegant"
+                  className={`flex items-center gap-1.5 py-8 text-[13px] tracking-wide uppercase font-sans font-light transition-colors ${
+                    isScrolled 
+                      ? "text-neutral-700 hover:text-amber-600" 
+                      : "text-white/90 hover:text-white"
+                  }`}
                 >
                   {item.label}
                   {item.submenu && (
@@ -162,12 +155,12 @@ export const Header = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.98 }}
                         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                        className="absolute top-full left-1/2 -translate-x-1/2 mega-menu min-w-[520px] p-10"
+                        className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-neutral-200 shadow-2xl min-w-[520px] p-10"
                       >
                         <div className="grid grid-cols-2 gap-12">
                           {/* Categories with Icons */}
                           <div>
-                            <h3 className="text-[11px] tracking-luxury uppercase text-muted-foreground mb-6 font-sans">
+                            <h3 className="text-[11px] tracking-luxury uppercase text-neutral-500 mb-6 font-sans">
                               By Category
                             </h3>
                             <ul className="space-y-4">
@@ -175,9 +168,9 @@ export const Header = () => {
                                 <li key={cat.label}>
                                   <Link
                                     to={cat.href}
-                                    className="flex items-center gap-3 text-sm font-sans font-light group/item transition-all duration-300 hover:text-primary hover:translate-x-1"
+                                    className="flex items-center gap-3 text-sm font-sans font-light text-neutral-700 group/item transition-all duration-300 hover:text-amber-600 hover:translate-x-1"
                                   >
-                                    <span className="text-lg transition-all duration-300 group-hover/item:scale-110 group-hover/item:drop-shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
+                                    <span className="text-lg transition-all duration-300 group-hover/item:scale-110">
                                       {cat.icon}
                                     </span>
                                     <span>{cat.label}</span>
@@ -189,7 +182,7 @@ export const Header = () => {
                           
                           {/* Collections */}
                           <div>
-                            <h3 className="text-[11px] tracking-luxury uppercase text-muted-foreground mb-6 font-sans">
+                            <h3 className="text-[11px] tracking-luxury uppercase text-neutral-500 mb-6 font-sans">
                               Collections by Color
                             </h3>
                             <ul className="space-y-4">
@@ -197,7 +190,7 @@ export const Header = () => {
                                 <li key={col.label}>
                                   <Link
                                     to={col.href}
-                                    className="text-sm font-sans font-light transition-all duration-300 hover:text-primary hover:translate-x-1 block"
+                                    className="text-sm font-sans font-light text-neutral-700 transition-all duration-300 hover:text-amber-600 hover:translate-x-1 block"
                                   >
                                     {col.label}
                                   </Link>
@@ -208,8 +201,8 @@ export const Header = () => {
                         </div>
                         
                         {/* Decorative gold line */}
-                        <div className="mt-8 pt-6 border-t border-border/50">
-                          <p className="text-xs text-muted-foreground font-sans font-light">
+                        <div className="mt-8 pt-6 border-t border-neutral-200">
+                          <p className="text-xs text-neutral-500 font-sans font-light">
                             ✨ Free gift wrapping on all orders
                           </p>
                         </div>
@@ -225,28 +218,33 @@ export const Header = () => {
           <div className="flex items-center gap-5">
             <Link 
               to="/search" 
-              className="p-2 icon-gold-hover transition-all duration-300" 
+              className={`p-2 transition-colors ${isScrolled ? "text-neutral-700 hover:text-amber-600" : "text-white hover:text-amber-300"}`}
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
             </Link>
             <Link 
               to="/account" 
-              className="hidden md:block p-2 icon-gold-hover transition-all duration-300" 
+              className={`hidden md:block p-2 transition-colors ${isScrolled ? "text-neutral-700 hover:text-amber-600" : "text-white hover:text-amber-300"}`}
               aria-label="Account"
             >
               <User className="w-5 h-5" />
             </Link>
             <Link 
               to="/wishlist" 
-              className="hidden md:block p-2 icon-gold-hover transition-all duration-300" 
+              className={`hidden md:block p-2 transition-colors relative ${isScrolled ? "text-neutral-700 hover:text-amber-600" : "text-white hover:text-amber-300"}`}
               aria-label="Wishlist"
             >
               <Heart className="w-5 h-5" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-amber-500 text-white text-[10px] rounded-full flex items-center justify-center font-sans font-medium">
+                  {wishlistCount}
+                </span>
+              )}
             </Link>
             <button
               onClick={() => setCartOpen(true)}
-              className="p-2 icon-gold-hover transition-all duration-300 relative"
+              className={`p-2 transition-colors relative ${isScrolled ? "text-neutral-700 hover:text-amber-600" : "text-white hover:text-amber-300"}`}
               aria-label="Cart"
             >
               <ShoppingBag className="w-5 h-5" />
@@ -254,7 +252,7 @@ export const Header = () => {
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center font-sans font-medium"
+                  className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-amber-500 text-white text-[10px] rounded-full flex items-center justify-center font-sans font-medium"
                 >
                   {cartCount}
                 </motion.span>
@@ -272,20 +270,20 @@ export const Header = () => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:hidden bg-card/98 backdrop-blur-xl border-t border-border/30 overflow-hidden"
+            className="lg:hidden bg-white border-t border-neutral-200 overflow-hidden"
           >
             <nav className="container-luxury py-8">
               {navigationItems.map((item, index) => (
                 <motion.div 
                   key={item.label} 
-                  className="border-b border-border/30 last:border-0"
+                  className="border-b border-neutral-200 last:border-0"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
                   <Link
                     to={item.href}
-                    className="block py-5 text-sm tracking-wide-luxury uppercase font-sans font-light"
+                    className="block py-5 text-sm tracking-wide uppercase font-sans font-light text-neutral-800"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {item.label}
@@ -298,7 +296,7 @@ export const Header = () => {
                         <Link
                           key={cat.label}
                           to={cat.href}
-                          className="flex items-center gap-2 text-sm text-muted-foreground font-sans font-light"
+                          className="flex items-center gap-2 text-sm text-neutral-600 font-sans font-light"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           <span>{cat.icon}</span>
