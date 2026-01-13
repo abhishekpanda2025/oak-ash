@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { LocalCartDrawer } from "@/components/cart/LocalCartDrawer";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
+import { CraftingVideoSection } from "@/components/home/CraftingVideoSection";
 import { CraftsmanshipSection } from "@/components/home/CraftsmanshipSection";
 import { CollectionShowcase } from "@/components/home/CollectionShowcase";
 import { Testimonials } from "@/components/home/Testimonials";
@@ -20,6 +21,7 @@ const Index = () => {
         <main>
           <HeroSection />
           <FeaturedProducts />
+          <CraftingVideoSection />
           <CraftsmanshipSection />
           <CollectionShowcase />
           <Testimonials />
