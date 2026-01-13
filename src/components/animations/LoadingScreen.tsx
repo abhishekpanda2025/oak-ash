@@ -3,19 +3,21 @@ import { useEffect, useState } from "react";
 
 interface LoadingScreenProps {
   onComplete: () => void;
+  isNavigation?: boolean;
 }
 
-export const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
+export const LoadingScreen = ({ onComplete, isNavigation = false }: LoadingScreenProps) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    const duration = isNavigation ? 1000 : 2500;
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onComplete, 800);
-    }, 2500);
+      setTimeout(onComplete, 500);
+    }, duration);
 
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, [onComplete, isNavigation]);
 
   return (
     <AnimatePresence>
@@ -24,11 +26,11 @@ export const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
           className="fixed inset-0 z-[9999] bg-neutral-950 flex flex-col items-center justify-center overflow-hidden"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
           {/* Background gold particles */}
           <div className="absolute inset-0 overflow-hidden">
-            {Array.from({ length: 30 }).map((_, i) => (
+            {Array.from({ length: isNavigation ? 15 : 30 }).map((_, i) => (
               <motion.div
                 key={i}
                 className="absolute w-1 h-1 bg-amber-500/40 rounded-full"
@@ -42,8 +44,8 @@ export const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
                   scale: [0, 1.5, 0],
                 }}
                 transition={{
-                  duration: 2 + Math.random() * 2,
-                  delay: Math.random() * 1,
+                  duration: isNavigation ? 1 : 2 + Math.random() * 2,
+                  delay: Math.random() * 0.5,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
@@ -51,93 +53,84 @@ export const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
             ))}
           </div>
 
-          {/* Decorative lines */}
+          {/* Decorative line */}
           <motion.div
             className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent"
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
-            transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: isNavigation ? 0.5 : 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           />
 
           {/* Logo Animation */}
           <div className="relative">
             {/* Outer ring */}
             <motion.div
-              className="absolute inset-0 border border-amber-500/30"
-              style={{ width: 200, height: 200, left: -50, top: -50 }}
+              className="absolute border border-amber-500/30 rounded-full"
+              style={{ width: 140, height: 140, left: -45, top: -45 }}
               initial={{ scale: 0.8, opacity: 0, rotate: 0 }}
               animate={{ scale: 1, opacity: 1, rotate: 360 }}
-              transition={{ duration: 2, ease: "linear", repeat: Infinity }}
+              transition={{ duration: isNavigation ? 1 : 2, ease: "linear", repeat: Infinity }}
             />
             
             {/* Inner ring */}
             <motion.div
-              className="absolute inset-0 border border-amber-400/40"
-              style={{ width: 160, height: 160, left: -30, top: -30 }}
+              className="absolute border border-amber-400/40 rounded-full"
+              style={{ width: 100, height: 100, left: -25, top: -25 }}
               initial={{ scale: 0.8, opacity: 0, rotate: 0 }}
               animate={{ scale: 1, opacity: 1, rotate: -360 }}
-              transition={{ duration: 3, ease: "linear", repeat: Infinity }}
+              transition={{ duration: isNavigation ? 1.5 : 3, ease: "linear", repeat: Infinity }}
             />
 
-            {/* Main logo text */}
-            <div className="relative w-[100px] h-[100px] flex items-center justify-center">
-              <motion.div
-                className="text-center"
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <motion.span
-                  className="font-serif text-5xl text-white block"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.5 }}
-                >
-                  O
-                </motion.span>
-              </motion.div>
-            </div>
+            {/* Main logo */}
+            <motion.div
+              className="relative w-[50px] h-[50px] flex items-center justify-center"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <span className="font-serif text-4xl text-white">O</span>
+            </motion.div>
           </div>
 
           {/* Brand Text */}
           <motion.div
-            className="mt-16 text-center"
-            initial={{ opacity: 0, y: 30 }}
+            className="mt-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
+            transition={{ duration: 0.5, delay: isNavigation ? 0.2 : 0.5 }}
           >
-            <div className="font-serif text-4xl md:text-5xl tracking-wider mb-4">
+            <div className="font-serif text-3xl md:text-4xl tracking-wider mb-3">
               <motion.span
                 className="inline-block text-white"
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -15 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 1 }}
+                transition={{ duration: 0.4, delay: isNavigation ? 0.3 : 0.7 }}
               >
                 OAK
               </motion.span>
               <motion.span
-                className="inline-block text-amber-500 mx-3"
+                className="inline-block text-amber-500 mx-2"
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 1.2 }}
+                transition={{ duration: 0.3, delay: isNavigation ? 0.4 : 0.9 }}
               >
                 &
               </motion.span>
               <motion.span
                 className="inline-block text-white"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 15 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 1.4 }}
+                transition={{ duration: 0.4, delay: isNavigation ? 0.5 : 1.1 }}
               >
                 ASH
               </motion.span>
             </div>
             
             <motion.p
-              className="text-xs tracking-[0.4em] uppercase text-amber-400/80 font-sans font-light"
+              className="text-[10px] tracking-[0.3em] uppercase text-amber-400/80 font-sans font-light"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.6 }}
+              transition={{ duration: 0.5, delay: isNavigation ? 0.6 : 1.3 }}
             >
               Premium Jewelry & Eyewear
             </motion.p>
@@ -145,10 +138,10 @@ export const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
 
           {/* Loading bar */}
           <motion.div
-            className="absolute bottom-20 left-1/2 -translate-x-1/2 w-48"
+            className="absolute bottom-16 left-1/2 -translate-x-1/2 w-32"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
+            transition={{ delay: 0.3 }}
           >
             <div className="h-px bg-neutral-800 overflow-hidden">
               <motion.div
@@ -156,7 +149,7 @@ export const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
                 initial={{ x: "-100%" }}
                 animate={{ x: "100%" }}
                 transition={{
-                  duration: 1.5,
+                  duration: isNavigation ? 0.8 : 1.5,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
@@ -166,16 +159,16 @@ export const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
 
           {/* Corner decorations */}
           <motion.div
-            className="absolute top-8 left-8 w-16 h-16 border-l border-t border-amber-500/30"
+            className="absolute top-6 left-6 w-12 h-12 border-l border-t border-amber-500/30"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
           />
           <motion.div
-            className="absolute bottom-8 right-8 w-16 h-16 border-r border-b border-amber-500/30"
+            className="absolute bottom-6 right-6 w-12 h-12 border-r border-b border-amber-500/30"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
           />
         </motion.div>
       )}
