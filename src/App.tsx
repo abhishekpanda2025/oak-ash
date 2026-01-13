@@ -11,6 +11,10 @@ import DemoProductDetail from "./pages/DemoProductDetail";
 import Collection from "./pages/Collection";
 import Wishlist from "./pages/Wishlist";
 import Search from "./pages/Search";
+import About from "./pages/About";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,11 +34,13 @@ const AnimatedRoutes = () => {
         <Route path="/shopify-product/:handle" element={<ProductDetail />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/search" element={<Search />} />
-        <Route path="/about" element={<Index />} />
-        <Route path="/contact" element={<Index />} />
-        <Route path="/faq" element={<Index />} />
-        <Route path="/account" element={<Index />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/account" element={<Account />} />
         <Route path="/eyewear" element={<Jewellery />} />
+        <Route path="/contact" element={<About />} />
+        <Route path="/faq" element={<About />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
