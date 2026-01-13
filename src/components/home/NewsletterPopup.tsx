@@ -1,25 +1,59 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, Gift } from "lucide-react";
 
 export const NewsletterPopup = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const showPopup = useCallback(() => {
+    const hasSeenPopup = localStorage.getItem("oak-ash-newsletter-popup");
+    if (!hasSeenPopup) {
+      setIsOpen(true);
+    }
+  }, []);
+
   useEffect(() => {
-    // Check if user has already seen the popup
     const hasSeenPopup = localStorage.getItem("oak-ash-newsletter-popup");
     
     if (!hasSeenPopup) {
-      // Show popup after 5 seconds
+      // Show popup after 5 minutes (300000ms)
       const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 5000);
+        showPopup();
+      }, 300000); // 5 minutes
       
-      return () => clearTimeout(timer);
+      // Also show when user tries to leave the page (mouse leaves viewport from top)
+      const handleMouseLeave = (e: MouseEvent) => {
+        if (e.clientY <= 0 && !isOpen) {
+          showPopup();
+        }
+      };
+
+      // Show on visibility change (when user switches tabs and comes back)
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'hidden') {
+          // User is leaving, mark for showing on return or next visit
+          sessionStorage.setItem("oak-ash-show-on-return", "true");
+        } else if (document.visibilityState === 'visible') {
+          const shouldShow = sessionStorage.getItem("oak-ash-show-on-return");
+          if (shouldShow && !isOpen) {
+            sessionStorage.removeItem("oak-ash-show-on-return");
+            showPopup();
+          }
+        }
+      };
+
+      document.addEventListener("mouseleave", handleMouseLeave);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener("mouseleave", handleMouseLeave);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      };
     }
-  }, []);
+  }, [showPopup, isOpen]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -30,7 +64,7 @@ export const NewsletterPopup = () => {
     e.preventDefault();
     if (email) {
       setIsSubmitted(true);
-      // In production, this would send to your newsletter API
+      localStorage.setItem("oak-ash-newsletter-popup", "true");
       setTimeout(() => {
         handleClose();
       }, 3000);
@@ -43,7 +77,7 @@ export const NewsletterPopup = () => {
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 bg-charcoal/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -52,124 +86,123 @@ export const NewsletterPopup = () => {
 
           {/* Modal */}
           <motion.div
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md px-4"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="relative bg-ivory mx-4 overflow-hidden">
+            <div className="relative bg-white overflow-hidden shadow-2xl">
               {/* Close Button */}
               <button
                 onClick={handleClose}
-                className="absolute top-4 right-4 p-2 text-charcoal/50 hover:text-charcoal transition-colors z-10"
+                className="absolute top-4 right-4 p-2 text-neutral-400 hover:text-neutral-700 transition-colors z-20"
                 aria-label="Close popup"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              {/* Content */}
-              <div className="grid md:grid-cols-2">
-                {/* Left - Visual Side */}
-                <div className="relative bg-gradient-to-br from-gold/20 via-gold/10 to-transparent p-8 md:p-10 flex items-center justify-center min-h-[200px] md:min-h-[400px]">
-                  {/* Decorative elements */}
-                  <motion.div
-                    className="absolute inset-0"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <div className="absolute top-6 left-6 w-16 h-16 border border-gold/30" />
-                    <div className="absolute bottom-6 right-6 w-16 h-16 border border-gold/30" />
-                  </motion.div>
-                  
-                  <motion.div
-                    className="text-center relative z-10"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <Sparkles className="w-10 h-10 text-gold mx-auto mb-4" />
-                    <span className="text-6xl md:text-7xl font-serif text-gold-gradient">15%</span>
-                    <p className="text-[11px] tracking-luxury uppercase text-charcoal/60 mt-2 font-sans">
-                      Off Your First Order
-                    </p>
-                  </motion.div>
-                </div>
+              {/* Decorative top bar */}
+              <div className="h-1.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600" />
 
-                {/* Right - Form Side */}
-                <div className="p-8 md:p-10 flex flex-col justify-center">
-                  <AnimatePresence mode="wait">
-                    {!isSubmitted ? (
+              {/* Content - Single Column Centered */}
+              <div className="p-8 md:p-10">
+                <AnimatePresence mode="wait">
+                  {!isSubmitted ? (
+                    <motion.div
+                      key="form"
+                      className="text-center"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {/* Icon */}
                       <motion.div
-                        key="form"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
+                        className="w-16 h-16 bg-amber-100 mx-auto mb-6 flex items-center justify-center"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", delay: 0.2 }}
                       >
-                        <h3 className="font-serif text-2xl md:text-3xl text-charcoal mb-3 leading-tight">
-                          Join the
-                          <br />
-                          <span className="italic text-gold-gradient">OAK & ASH</span>
-                          <br />
-                          Circle
-                        </h3>
-                        
-                        <p className="text-sm text-charcoal/60 font-sans font-light mb-6 leading-relaxed">
-                          Subscribe for exclusive access to new collections, styling tips, and members-only offers.
-                        </p>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                          <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email"
-                            className="w-full bg-transparent border-b border-charcoal/20 pb-3 text-sm font-sans font-light placeholder:text-charcoal/40 focus:outline-none focus:border-gold transition-colors"
-                            required
-                          />
-                          
-                          <motion.button
-                            type="submit"
-                            className="w-full btn-gold-shimmer text-charcoal py-4 text-[12px] tracking-wide-luxury uppercase font-sans font-medium"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            Unlock 15% Off
-                          </motion.button>
-                        </form>
-
-                        <p className="text-[10px] text-charcoal/40 font-sans mt-4 text-center">
-                          By subscribing, you agree to our Privacy Policy
-                        </p>
+                        <Gift className="w-8 h-8 text-amber-600" />
                       </motion.div>
-                    ) : (
+
+                      {/* Discount Badge */}
                       <motion.div
-                        key="success"
-                        className="text-center py-8"
-                        initial={{ opacity: 0, scale: 0.9 }}
+                        className="inline-block mb-4"
+                        initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5 }}
+                        transition={{ delay: 0.3 }}
                       >
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", delay: 0.2 }}
-                        >
-                          <Sparkles className="w-12 h-12 text-gold mx-auto mb-4" />
-                        </motion.div>
-                        <h3 className="font-serif text-2xl text-charcoal mb-2">
-                          Welcome to the Circle
-                        </h3>
-                        <p className="text-sm text-charcoal/60 font-sans font-light">
-                          Check your inbox for your exclusive discount code.
-                        </p>
+                        <span className="text-5xl md:text-6xl font-serif font-normal text-amber-600">15%</span>
+                        <span className="text-xl font-serif text-neutral-700 ml-2">OFF</span>
                       </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+
+                      {/* Title */}
+                      <h3 className="font-serif text-2xl md:text-3xl text-neutral-900 mb-4 leading-tight text-center">
+                        Sign up to our newsletter and receive 15% on your first order.
+                      </h3>
+                      
+                      {/* Description */}
+                      <p className="text-sm text-neutral-600 font-sans font-light mb-8 leading-relaxed text-center max-w-sm mx-auto">
+                        By signing up to our mailing list you will receive discounts and exclusive offers.
+                      </p>
+
+                      {/* Form */}
+                      <form onSubmit={handleSubmit} className="space-y-4 max-w-xs mx-auto">
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="Enter your email address"
+                          className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3.5 text-sm font-sans placeholder:text-neutral-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all text-center"
+                          required
+                        />
+                        
+                        <motion.button
+                          type="submit"
+                          className="w-full bg-neutral-900 hover:bg-amber-600 text-white py-4 text-xs tracking-wide uppercase font-sans font-medium transition-colors"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          Unlock 15% Off
+                        </motion.button>
+                      </form>
+
+                      <p className="text-[10px] text-neutral-400 font-sans mt-6 text-center">
+                        By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.
+                      </p>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="success"
+                      className="text-center py-8"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <motion.div
+                        className="w-20 h-20 bg-green-100 mx-auto mb-6 flex items-center justify-center rounded-full"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", delay: 0.2 }}
+                      >
+                        <Sparkles className="w-10 h-10 text-green-600" />
+                      </motion.div>
+                      <h3 className="font-serif text-2xl text-neutral-900 mb-3 text-center">
+                        Welcome to OAK & ASH!
+                      </h3>
+                      <p className="text-sm text-neutral-600 font-sans font-light text-center">
+                        Check your inbox for your exclusive 15% discount code.
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
+
+              {/* Decorative corners */}
+              <div className="absolute top-8 left-8 w-8 h-8 border-l border-t border-amber-300/50" />
+              <div className="absolute bottom-8 right-8 w-8 h-8 border-r border-b border-amber-300/50" />
             </div>
           </motion.div>
         </>

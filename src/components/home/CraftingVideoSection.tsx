@@ -1,13 +1,127 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { useRef, useState, useEffect, useCallback } from "react";
+import { Play, Pause, Volume2, VolumeX, Music } from "lucide-react";
 import craftingVideo from "@/assets/crafting-video.mp4";
+
+// Ambient audio context for crafting sounds
+const useAmbientAudio = (isInView: boolean) => {
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const oscillatorRef = useRef<OscillatorNode | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+
+  const createAmbientSound = useCallback(() => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+
+    const ctx = audioContextRef.current;
+    
+    // Create gain node for volume control
+    const gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+    gainNode.connect(ctx.destination);
+    gainNodeRef.current = gainNode;
+
+    // Create a warm, ambient tone (simulating workshop atmosphere)
+    const oscillator = ctx.createOscillator();
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(110, ctx.currentTime); // Low A note for warmth
+    
+    // Add subtle vibrato
+    const vibrato = ctx.createOscillator();
+    vibrato.frequency.setValueAtTime(0.5, ctx.currentTime);
+    const vibratoGain = ctx.createGain();
+    vibratoGain.gain.setValueAtTime(2, ctx.currentTime);
+    vibrato.connect(vibratoGain);
+    vibratoGain.connect(oscillator.frequency);
+    vibrato.start();
+
+    // Create a second oscillator for harmonic richness
+    const oscillator2 = ctx.createOscillator();
+    oscillator2.type = 'triangle';
+    oscillator2.frequency.setValueAtTime(220, ctx.currentTime);
+    
+    const gainNode2 = ctx.createGain();
+    gainNode2.gain.setValueAtTime(0, ctx.currentTime);
+    
+    oscillator.connect(gainNode);
+    oscillator2.connect(gainNode2);
+    gainNode2.connect(ctx.destination);
+    
+    oscillator.start();
+    oscillator2.start();
+    oscillatorRef.current = oscillator;
+
+    return { gainNode, gainNode2, oscillator, oscillator2 };
+  }, []);
+
+  const startAmbientSound = useCallback(() => {
+    if (!isAudioEnabled) return;
+    
+    try {
+      const { gainNode, gainNode2 } = createAmbientSound();
+      const ctx = audioContextRef.current;
+      if (ctx && gainNode) {
+        // Fade in
+        gainNode.gain.linearRampToValueAtTime(0.03, ctx.currentTime + 2);
+        gainNode2?.gain.linearRampToValueAtTime(0.015, ctx.currentTime + 2);
+        setIsAudioPlaying(true);
+      }
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  }, [isAudioEnabled, createAmbientSound]);
+
+  const stopAmbientSound = useCallback(() => {
+    const ctx = audioContextRef.current;
+    const gainNode = gainNodeRef.current;
+    if (ctx && gainNode) {
+      gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 1);
+      setIsAudioPlaying(false);
+    }
+  }, []);
+
+  const toggleAudio = useCallback(() => {
+    if (isAudioEnabled) {
+      stopAmbientSound();
+      setIsAudioEnabled(false);
+    } else {
+      setIsAudioEnabled(true);
+      if (isInView) {
+        startAmbientSound();
+      }
+    }
+  }, [isAudioEnabled, isInView, startAmbientSound, stopAmbientSound]);
+
+  useEffect(() => {
+    if (isInView && isAudioEnabled) {
+      startAmbientSound();
+    } else {
+      stopAmbientSound();
+    }
+  }, [isInView, isAudioEnabled, startAmbientSound, stopAmbientSound]);
+
+  useEffect(() => {
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
+
+  return { isAudioEnabled, isAudioPlaying, toggleAudio };
+};
 
 export const CraftingVideoSection = () => {
   const ref = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
+  
+  const isInView = useInView(ref, { margin: "-20%" });
+  const { isAudioEnabled, toggleAudio } = useAmbientAudio(isInView);
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -20,7 +134,6 @@ export const CraftingVideoSection = () => {
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.play().catch(() => {
-        // Autoplay was prevented
         setIsPlaying(false);
       });
     }
@@ -117,8 +230,8 @@ export const CraftingVideoSection = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/60 via-transparent to-neutral-950/30 pointer-events-none" />
 
             {/* Video controls */}
-            <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between z-10">
-              <div className="flex items-center gap-4">
+              <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between z-10">
+              <div className="flex items-center gap-3">
                 <motion.button
                   onClick={togglePlay}
                   className="w-12 h-12 bg-amber-500/90 backdrop-blur-sm flex items-center justify-center text-black hover:bg-amber-400 transition-colors"
@@ -143,6 +256,21 @@ export const CraftingVideoSection = () => {
                   ) : (
                     <Volume2 className="w-4 h-4" />
                   )}
+                </motion.button>
+
+                {/* Ambient Audio Toggle */}
+                <motion.button
+                  onClick={toggleAudio}
+                  className={`w-10 h-10 backdrop-blur-sm flex items-center justify-center transition-colors ${
+                    isAudioEnabled 
+                      ? "bg-amber-500/80 text-black" 
+                      : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  title={isAudioEnabled ? "Disable ambient sound" : "Enable ambient crafting sound"}
+                >
+                  <Music className="w-4 h-4" />
                 </motion.button>
               </div>
 
