@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { LocalCartDrawer } from "@/components/cart/LocalCartDrawer";
 import { PageTransition, ScrollReveal, StaggerContainer, StaggerItem } from "@/components/animations/PageTransition";
 import { Heart, Gem, Award, Users, Sparkles, Shield } from "lucide-react";
 import heroImage from "@/assets/hero-jewelry.jpg";
 import craftsmanshipImage from "@/assets/craftsmanship.jpg";
-import modelJewelry from "@/assets/model-jewelry.jpg";
 
 const values = [
   {
@@ -30,27 +30,6 @@ const values = [
   },
 ];
 
-const team = [
-  {
-    name: "Victoria Ashford",
-    role: "Founder & Creative Director",
-    image: modelJewelry,
-    bio: "With over 20 years in luxury jewelry, Victoria founded OAK & ASH to blend timeless elegance with modern sensibility.",
-  },
-  {
-    name: "Sebastian Oak",
-    role: "Head of Design",
-    image: craftsmanshipImage,
-    bio: "Sebastian brings a unique perspective to jewelry design, drawing inspiration from architecture and nature.",
-  },
-  {
-    name: "Isabella Chen",
-    role: "Master Goldsmith",
-    image: heroImage,
-    bio: "A third-generation goldsmith, Isabella ensures every piece meets our exacting standards of excellence.",
-  },
-];
-
 const milestones = [
   { year: "2015", event: "OAK & ASH founded in London" },
   { year: "2017", event: "First flagship store opens" },
@@ -65,6 +44,7 @@ const About = () => {
     <PageTransition>
       <div className="min-h-screen bg-white">
         <Header />
+        <LocalCartDrawer />
         
         {/* Hero Section */}
         <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
@@ -171,7 +151,7 @@ const About = () => {
                 worn with pride, and passed down with love."
               </blockquote>
               <cite className="text-amber-400 font-sans text-sm tracking-wide not-italic">
-                — Victoria Ashford, Founder
+                — OAK & ASH
               </cite>
             </ScrollReveal>
           </div>
@@ -210,48 +190,8 @@ const About = () => {
           </div>
         </section>
 
-        {/* Team Section */}
-        <section className="py-20 md:py-32 bg-neutral-50">
-          <div className="container-luxury">
-            <ScrollReveal className="text-center mb-16">
-              <p className="text-xs tracking-luxury uppercase text-amber-600 mb-4 font-sans">
-                The People Behind the Craft
-              </p>
-              <h2 className="font-serif text-3xl md:text-4xl text-neutral-900">
-                Meet Our Team
-              </h2>
-            </ScrollReveal>
-
-            <StaggerContainer className="grid md:grid-cols-3 gap-10">
-              {team.map((member, index) => (
-                <StaggerItem key={index}>
-                  <motion.div
-                    className="group"
-                    whileHover={{ y: -10 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <div className="relative overflow-hidden mb-6 aspect-[3/4]">
-                      <img
-                        src={member.image}
-                        alt={member.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    </div>
-                    <h3 className="font-serif text-xl text-neutral-900 mb-1">{member.name}</h3>
-                    <p className="text-amber-600 font-sans text-sm mb-3">{member.role}</p>
-                    <p className="text-neutral-600 font-sans font-light text-sm leading-relaxed">
-                      {member.bio}
-                    </p>
-                  </motion.div>
-                </StaggerItem>
-              ))}
-            </StaggerContainer>
-          </div>
-        </section>
-
         {/* Timeline */}
-        <section className="py-20 md:py-32">
+        <section className="py-20 md:py-32 bg-neutral-50">
           <div className="container-luxury">
             <ScrollReveal className="text-center mb-16">
               <p className="text-xs tracking-luxury uppercase text-amber-600 mb-4 font-sans">

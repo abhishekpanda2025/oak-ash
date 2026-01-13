@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
-  User, Package, Heart, MapPin, CreditCard, Settings, 
-  LogOut, ChevronRight, Edit2, Bell, Shield
+  User, Package, Heart, MapPin, CreditCard, 
+  LogOut, ChevronRight, Edit2, Bell, Shield, Loader2
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { LocalCartDrawer } from "@/components/cart/LocalCartDrawer";
 import { PageTransition, ScrollReveal, StaggerContainer, StaggerItem } from "@/components/animations/PageTransition";
 import { useWishlistStore } from "@/stores/wishlistStore";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const menuItems = [
   { icon: Package, label: "My Orders", href: "/account/orders", description: "Track and manage your orders" },
@@ -19,40 +22,47 @@ const menuItems = [
   { icon: Shield, label: "Privacy & Security", href: "/account/security", description: "Password and account security" },
 ];
 
-const recentOrders = [
-  { 
-    id: "OAK-2026-1234", 
-    date: "Jan 10, 2026", 
-    status: "Delivered", 
-    total: 245,
-    items: 2,
-  },
-  { 
-    id: "OAK-2026-1198", 
-    date: "Jan 3, 2026", 
-    status: "In Transit", 
-    total: 189,
-    items: 1,
-  },
-];
-
 const Account = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const navigate = useNavigate();
+  const { user, isLoading, signOut } = useAuth();
   const { items: wishlistItems } = useWishlistStore();
 
-  // Mock user data (would come from auth context in production)
-  const user = {
-    firstName: "Victoria",
-    lastName: "Ashford",
-    email: "victoria@example.com",
-    memberSince: "March 2024",
-    tier: "Gold Member",
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate("/login");
+    }
+  }, [user, isLoading, navigate]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out", {
+      description: "You have been successfully signed out.",
+    });
+    navigate("/");
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  // Get user's name from metadata or email
+  const fullName = user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
+  const firstName = fullName.split(" ")[0];
+  const initials = fullName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
 
   return (
     <PageTransition>
       <div className="min-h-screen bg-neutral-50">
         <Header />
+        <LocalCartDrawer />
         
         <section className="pt-32 pb-20 md:pt-40 md:pb-32">
           <div className="container-luxury">
@@ -64,14 +74,14 @@ const Account = () => {
                     {/* User Profile */}
                     <div className="text-center mb-6 pb-6 border-b border-neutral-200">
                       <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white font-serif text-2xl">
-                        {user.firstName[0]}{user.lastName[0]}
+                        {initials}
                       </div>
                       <h2 className="font-serif text-xl text-neutral-900">
-                        {user.firstName} {user.lastName}
+                        {fullName}
                       </h2>
                       <p className="text-sm text-neutral-500 font-sans">{user.email}</p>
                       <span className="inline-block mt-2 px-3 py-1 bg-amber-100 text-amber-700 text-xs font-sans tracking-wide">
-                        {user.tier}
+                        Member
                       </span>
                     </div>
 
@@ -91,7 +101,10 @@ const Account = () => {
                     </nav>
 
                     {/* Logout */}
-                    <button className="w-full flex items-center gap-3 px-4 py-3 mt-4 text-red-600 hover:bg-red-50 transition-colors border-t border-neutral-200">
+                    <button 
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-3 px-4 py-3 mt-4 text-red-600 hover:bg-red-50 transition-colors border-t border-neutral-200"
+                    >
                       <LogOut className="w-5 h-5" />
                       <span className="font-sans text-sm">Sign Out</span>
                     </button>
@@ -107,9 +120,9 @@ const Account = () => {
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-amber-400 font-sans text-sm mb-1">Welcome back,</p>
-                        <h1 className="font-serif text-3xl mb-2">{user.firstName}</h1>
+                        <h1 className="font-serif text-3xl mb-2">{firstName}</h1>
                         <p className="text-neutral-400 font-sans font-light text-sm">
-                          Member since {user.memberSince}
+                          {user.email}
                         </p>
                       </div>
                       <motion.button
@@ -129,7 +142,7 @@ const Account = () => {
                   <StaggerItem>
                     <div className="bg-white p-6 shadow-lg text-center">
                       <Package className="w-8 h-8 text-amber-500 mx-auto mb-3" />
-                      <p className="font-serif text-2xl text-neutral-900">12</p>
+                      <p className="font-serif text-2xl text-neutral-900">0</p>
                       <p className="text-sm text-neutral-500 font-sans">Total Orders</p>
                     </div>
                   </StaggerItem>
@@ -143,54 +156,14 @@ const Account = () => {
                   <StaggerItem>
                     <div className="bg-white p-6 shadow-lg text-center">
                       <CreditCard className="w-8 h-8 text-amber-500 mx-auto mb-3" />
-                      <p className="font-serif text-2xl text-neutral-900">$1,856</p>
+                      <p className="font-serif text-2xl text-neutral-900">$0</p>
                       <p className="text-sm text-neutral-500 font-sans">Total Spent</p>
                     </div>
                   </StaggerItem>
                 </StaggerContainer>
 
-                {/* Recent Orders */}
-                <ScrollReveal delay={0.2}>
-                  <div className="bg-white p-6 md:p-8 shadow-lg mb-8">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="font-serif text-xl text-neutral-900">Recent Orders</h3>
-                      <Link
-                        to="/account/orders"
-                        className="text-sm font-sans text-amber-600 hover:text-amber-700 transition-colors"
-                      >
-                        View All
-                      </Link>
-                    </div>
-
-                    <div className="space-y-4">
-                      {recentOrders.map((order) => (
-                        <motion.div
-                          key={order.id}
-                          className="flex items-center justify-between p-4 border border-neutral-200 hover:border-amber-300 transition-colors"
-                          whileHover={{ x: 4 }}
-                        >
-                          <div>
-                            <p className="font-sans text-sm text-neutral-900 font-medium">{order.id}</p>
-                            <p className="text-xs text-neutral-500 font-sans">{order.date} • {order.items} item(s)</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-serif text-lg text-neutral-900">${order.total}</p>
-                            <span className={`text-xs font-sans px-2 py-1 ${
-                              order.status === "Delivered" 
-                                ? "bg-green-100 text-green-700" 
-                                : "bg-blue-100 text-blue-700"
-                            }`}>
-                              {order.status}
-                            </span>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                </ScrollReveal>
-
                 {/* Account Settings */}
-                <ScrollReveal delay={0.3}>
+                <ScrollReveal delay={0.2}>
                   <div className="bg-white p-6 md:p-8 shadow-lg">
                     <h3 className="font-serif text-xl text-neutral-900 mb-6">Account Settings</h3>
                     
