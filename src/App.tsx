@@ -9,6 +9,7 @@ import Jewellery from "./pages/Jewellery";
 import ProductDetail from "./pages/ProductDetail";
 import DemoProductDetail from "./pages/DemoProductDetail";
 import Collection from "./pages/Collection";
+import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const AnimatedRoutes = () => {
         <Route path="/collection/:collectionId" element={<Collection />} />
         <Route path="/product/:handle" element={<DemoProductDetail />} />
         <Route path="/shopify-product/:handle" element={<ProductDetail />} />
+        <Route path="/wishlist" element={<Wishlist />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
