@@ -68,9 +68,9 @@ const DiamondSparkle = ({ delay, x, y }: { delay: number; x: string; y: string }
       />
       <defs>
         <linearGradient id="diamondGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="hsl(43, 80%, 70%)" />
-          <stop offset="50%" stopColor="hsl(0, 0%, 100%)" />
-          <stop offset="100%" stopColor="hsl(43, 80%, 65%)" />
+          <stop offset="0%" stopColor="#E8D5A3" />
+          <stop offset="50%" stopColor="#FFFFFF" />
+          <stop offset="100%" stopColor="#D4B86A" />
         </linearGradient>
       </defs>
     </svg>
@@ -80,11 +80,10 @@ const DiamondSparkle = ({ delay, x, y }: { delay: number; x: string; y: string }
 // Gold particle with shimmer
 const GoldParticle = ({ delay, duration, left }: { delay: number; duration: number; left: string }) => (
   <motion.div
-    className="absolute w-1.5 h-1.5 rounded-full"
+    className="absolute w-1.5 h-1.5 rounded-full bg-gold-shimmer"
     style={{ 
       left,
-      background: "linear-gradient(135deg, hsl(43, 80%, 70%) 0%, hsl(38, 60%, 52%) 50%, hsl(43, 80%, 65%) 100%)",
-      boxShadow: "0 0 10px hsl(43, 80%, 65% / 0.5)"
+      boxShadow: "0 0 10px hsl(43 80% 65% / 0.5)"
     }}
     initial={{ y: "100vh", opacity: 0, scale: 0 }}
     animate={{ 
@@ -100,6 +99,45 @@ const GoldParticle = ({ delay, duration, left }: { delay: number; duration: numb
       ease: "linear",
     }}
   />
+);
+
+// Animated letter component
+const AnimatedLetter = ({ 
+  letter, 
+  delay 
+}: { 
+  letter: string; 
+  delay: number;
+}) => (
+  <motion.span
+    className="inline-block"
+    initial={{ opacity: 0, y: 50, rotateX: -90 }}
+    animate={{ opacity: 1, y: 0, rotateX: 0 }}
+    transition={{
+      duration: 0.8,
+      delay,
+      ease: [0.16, 1, 0.3, 1],
+    }}
+  >
+    {letter === " " ? "\u00A0" : letter}
+  </motion.span>
+);
+
+// Animated word component with letter-by-letter reveal
+const AnimatedWord = ({ 
+  word, 
+  baseDelay = 0,
+  className = ""
+}: { 
+  word: string; 
+  baseDelay?: number;
+  className?: string;
+}) => (
+  <span className={className}>
+    {word.split("").map((letter, i) => (
+      <AnimatedLetter key={i} letter={letter} delay={baseDelay + i * 0.05} />
+    ))}
+  </span>
 );
 
 export const HeroSection = () => {
@@ -147,24 +185,18 @@ export const HeroSection = () => {
 
   useEffect(() => {
     if (textRef.current) {
-      const tl = gsap.timeline({ delay: 0.8 });
+      const tl = gsap.timeline({ delay: 0.5 });
       
       tl.fromTo(
         ".hero-subtitle",
-        { y: 40, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1, ease: "power3.out" }
-      )
-      .fromTo(
-        ".hero-title-line",
-        { y: 120, opacity: 0, rotateX: -45 },
-        { y: 0, opacity: 1, rotateX: 0, duration: 1.2, stagger: 0.15, ease: "power3.out" },
-        "-=0.6"
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
       )
       .fromTo(
         ".hero-description",
         { y: 30, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" },
-        "-=0.5"
+        "+=0.8"
       )
       .fromTo(
         ".hero-cta",
@@ -192,14 +224,14 @@ export const HeroSection = () => {
         />
         
         {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal/80 via-charcoal/50 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-transparent to-charcoal/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30" />
         
         {/* Animated light reflections */}
         <motion.div 
           className="absolute inset-0"
           style={{
-            background: "radial-gradient(circle at 30% 40%, hsl(43, 80%, 65% / 0.15) 0%, transparent 50%)"
+            background: "radial-gradient(circle at 30% 40%, rgba(212, 184, 106, 0.15) 0%, transparent 50%)"
           }}
           animate={{ 
             opacity: [0.3, 0.6, 0.3],
@@ -210,7 +242,7 @@ export const HeroSection = () => {
         <motion.div 
           className="absolute inset-0"
           style={{
-            background: "radial-gradient(circle at 70% 60%, hsl(43, 80%, 65% / 0.1) 0%, transparent 40%)"
+            background: "radial-gradient(circle at 70% 60%, rgba(212, 184, 106, 0.1) 0%, transparent 40%)"
           }}
           animate={{ 
             opacity: [0.2, 0.5, 0.2],
@@ -249,41 +281,52 @@ export const HeroSection = () => {
       {/* Content */}
       <motion.div 
         ref={textRef} 
-        className="relative z-10 container-luxury text-ivory pt-24"
+        className="relative z-10 container-luxury pt-24"
         style={{ opacity }}
       >
         <div className="max-w-3xl">
           <motion.p 
-            className="hero-subtitle text-[11px] md:text-xs tracking-luxury uppercase mb-6 md:mb-8 font-sans font-light"
-            style={{ color: "hsl(43, 80%, 70%)" }}
+            className="hero-subtitle text-xs md:text-sm tracking-luxury uppercase mb-6 md:mb-8 font-sans font-light text-amber-200"
           >
             New Collection 2024
           </motion.p>
 
-          <h1 className="font-serif text-display font-normal leading-tight mb-8 md:mb-10 overflow-hidden">
-            <span className="hero-title-line block">Crafted by</span>
-            <span className="hero-title-line block">
-              <span className="italic text-gold-gradient">Passion</span>
-              <span className="text-primary font-light mx-1" style={{ fontFamily: "'Cormorant Garamond', serif" }}>&amp;</span>
+          {/* Animated Title */}
+          <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal leading-tight mb-8 md:mb-10 text-white">
+            <span className="block overflow-hidden">
+              <AnimatedWord word="Crafted by" baseDelay={0.8} />
             </span>
-            <span className="hero-title-line block">Worn Forever.</span>
+            <span className="block overflow-hidden">
+              <AnimatedWord word="Passion" baseDelay={1.3} className="italic text-amber-300" />
+              <motion.span 
+                className="inline-block text-amber-400 mx-2"
+                initial={{ opacity: 0, scale: 0, rotate: -180 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                transition={{ delay: 1.8, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              >
+                &amp;
+              </motion.span>
+            </span>
+            <span className="block overflow-hidden">
+              <AnimatedWord word="Worn Forever." baseDelay={2.2} />
+            </span>
           </h1>
 
-          <p className="hero-description text-sm md:text-base text-ivory/70 max-w-lg mb-10 md:mb-12 font-sans font-light leading-relaxed">
+          <p className="hero-description text-sm md:text-base text-white/80 max-w-lg mb-10 md:mb-12 font-sans font-light leading-relaxed">
             Discover our curated collection of premium jewelry, where every piece tells a story of artistry, heritage, and timeless elegance.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-5">
             <Link
               to="/collection/new-in"
-              className="hero-cta group inline-flex items-center justify-center gap-3 btn-gold-shimmer text-charcoal px-10 py-4.5 text-[13px] tracking-wide-luxury uppercase font-sans font-medium transition-all duration-500 hover:shadow-gold"
+              className="hero-cta group inline-flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black px-10 py-4 text-sm tracking-wide uppercase font-sans font-medium transition-all duration-500 hover:from-amber-400 hover:to-amber-500 hover:shadow-lg hover:shadow-amber-500/30"
             >
               Shop New In
               <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
             <Link
               to="/jewellery"
-              className="hero-cta group inline-flex items-center justify-center gap-3 border border-ivory/40 text-ivory px-10 py-4.5 text-[13px] tracking-wide-luxury uppercase font-sans font-light hover:bg-ivory/10 hover:border-ivory/60 transition-all duration-500 backdrop-blur-sm"
+              className="hero-cta group inline-flex items-center justify-center gap-3 border border-white/50 text-white px-10 py-4 text-sm tracking-wide uppercase font-sans font-light hover:bg-white/10 hover:border-white transition-all duration-500 backdrop-blur-sm"
             >
               Explore Collections
             </Link>
@@ -296,21 +339,21 @@ export const HeroSection = () => {
         className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2.5 }}
+        transition={{ delay: 3 }}
       >
-        <span className="text-ivory/50 text-[10px] tracking-luxury uppercase font-sans font-light">
+        <span className="text-white/60 text-[10px] tracking-luxury uppercase font-sans font-light">
           Scroll to Discover
         </span>
         <motion.div
-          className="w-px h-12 bg-gradient-to-b from-ivory/60 to-transparent"
+          className="w-px h-12 bg-gradient-to-b from-white/60 to-transparent"
           animate={{ scaleY: [1, 0.5, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
       </motion.div>
 
       {/* Decorative corners */}
-      <div className="absolute top-32 left-8 w-20 h-20 border-l border-t border-gold/20" />
-      <div className="absolute bottom-32 right-8 w-20 h-20 border-r border-b border-gold/20" />
+      <div className="absolute top-32 left-8 w-20 h-20 border-l border-t border-amber-500/30" />
+      <div className="absolute bottom-32 right-8 w-20 h-20 border-r border-b border-amber-500/30" />
     </section>
   );
 };

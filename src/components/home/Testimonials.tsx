@@ -38,7 +38,7 @@ export const Testimonials = () => {
   };
 
   return (
-    <section ref={ref} className="section-padding">
+    <section ref={ref} className="section-padding bg-white">
       <div className="container-luxury">
         <motion.div
           className="text-center mb-12"
@@ -46,10 +46,10 @@ export const Testimonials = () => {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
         >
-          <p className="text-xs tracking-luxury uppercase text-primary mb-4 font-sans">
+          <p className="text-xs tracking-luxury uppercase text-amber-600 mb-4 font-sans">
             Testimonials
           </p>
-          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium">
+          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium text-neutral-800">
             What Our Clients Say
           </h2>
         </motion.div>
@@ -64,14 +64,14 @@ export const Testimonials = () => {
             {/* Navigation */}
             <button
               onClick={prevTestimonial}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 p-2 hover:text-primary transition-colors hidden md:block"
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 p-2 text-neutral-400 hover:text-amber-600 transition-colors hidden md:block"
               aria-label="Previous testimonial"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
             <button
               onClick={nextTestimonial}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 p-2 hover:text-primary transition-colors hidden md:block"
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 p-2 text-neutral-400 hover:text-amber-600 transition-colors hidden md:block"
               aria-label="Next testimonial"
             >
               <ChevronRight className="w-6 h-6" />
@@ -89,21 +89,21 @@ export const Testimonials = () => {
               {/* Stars */}
               <div className="flex justify-center gap-1 mb-6">
                 {[...Array(testimonials[activeIndex].rating)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+                  <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
                 ))}
               </div>
 
               {/* Quote */}
-              <blockquote className="font-serif text-xl md:text-2xl lg:text-3xl italic text-foreground/90 mb-8 leading-relaxed">
+              <blockquote className="font-serif text-xl md:text-2xl lg:text-3xl italic text-neutral-700 mb-8 leading-relaxed">
                 "{testimonials[activeIndex].text}"
               </blockquote>
 
               {/* Author */}
               <div>
-                <p className="font-serif text-lg font-medium">
+                <p className="font-serif text-lg font-medium text-neutral-800">
                   {testimonials[activeIndex].name}
                 </p>
-                <p className="text-sm text-muted-foreground font-sans">
+                <p className="text-sm text-neutral-500 font-sans">
                   {testimonials[activeIndex].location}
                 </p>
               </div>
@@ -118,8 +118,8 @@ export const Testimonials = () => {
                 onClick={() => setActiveIndex(index)}
                 className={`w-2 h-2 rounded-full transition-all ${
                   index === activeIndex
-                    ? "bg-primary w-8"
-                    : "bg-border hover:bg-muted-foreground"
+                    ? "bg-amber-500 w-8"
+                    : "bg-neutral-300 hover:bg-neutral-400"
                 }`}
                 aria-label={`Go to testimonial ${index + 1}`}
               />

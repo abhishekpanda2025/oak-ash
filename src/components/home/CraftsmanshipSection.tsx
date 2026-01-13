@@ -21,7 +21,7 @@ export const CraftsmanshipSection = () => {
         className="absolute inset-0"
         style={{ y }}
       >
-        <div className="absolute inset-0 bg-charcoal" />
+        <div className="absolute inset-0 bg-neutral-900" />
         {/* Subtle pattern overlay */}
         <div className="absolute inset-0 opacity-5" 
           style={{ 
@@ -48,25 +48,25 @@ export const CraftsmanshipSection = () => {
               
               {/* Play button overlay for video */}
               <motion.button
-                className="absolute inset-0 flex items-center justify-center bg-charcoal/30 backdrop-blur-sm group cursor-pointer"
+                className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm group cursor-pointer"
                 whileHover={{ backgroundColor: "rgba(0,0,0,0.4)" }}
               >
                 <motion.div
-                  className="w-20 h-20 rounded-full bg-ivory/90 flex items-center justify-center"
+                  className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Play className="w-8 h-8 text-charcoal ml-1" fill="currentColor" />
+                  <Play className="w-8 h-8 text-neutral-900 ml-1" fill="currentColor" />
                 </motion.div>
               </motion.button>
               
               {/* Gold frame decoration */}
-              <div className="absolute -inset-4 border border-gold/30 pointer-events-none" />
+              <div className="absolute -inset-4 border border-amber-500/30 pointer-events-none" />
             </div>
             
             {/* Decorative element */}
             <motion.div
-              className="absolute -bottom-6 -right-6 w-40 h-40 border border-gold/20"
+              className="absolute -bottom-6 -right-6 w-40 h-40 border border-amber-500/20"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={isInView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.8, delay: 0.4 }}
@@ -75,47 +75,46 @@ export const CraftsmanshipSection = () => {
 
           {/* Content Side */}
           <motion.div
-            className="text-ivory"
             initial={{ opacity: 0, x: 60 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
-            <p className="text-[11px] tracking-luxury uppercase text-gold mb-6 font-sans font-light">
+            <p className="text-xs tracking-luxury uppercase text-amber-400 mb-6 font-sans font-light">
               Our Craftsmanship
             </p>
             
-            <h2 className="font-serif text-headline mb-8 leading-tight">
+            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-white mb-8 leading-tight">
               Inspired by the Strength of Oak
               <br />
-              <span className="italic text-gold-gradient">& the Grace of Ash</span>
+              <span className="italic text-amber-400">&amp; the Grace of Ash</span>
             </h2>
             
-            <div className="space-y-6 text-ivory/70 font-sans font-light leading-relaxed text-base">
+            <div className="space-y-6 text-neutral-300 font-sans font-light leading-relaxed text-base">
               <p>
                 Every piece in our collection represents a harmony between timeless design and modern elegance. Our master artisans bring decades of expertise to each creation.
               </p>
               <p>
-                From the initial sketch to the final polish, each piece of OAK & ASH jewelry passes through the hands of skilled craftspeople who treat every creation as a work of art.
+                From the initial sketch to the final polish, each piece of OAK &amp; ASH jewelry passes through the hands of skilled craftspeople who treat every creation as a work of art.
               </p>
             </div>
 
             {/* Editorial Quote */}
             <motion.blockquote
-              className="mt-12 pl-6 border-l-2 border-gold/50"
+              className="mt-12 pl-6 border-l-2 border-amber-500/50"
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.5 }}
             >
-              <p className="font-serif text-xl italic text-ivory/90 leading-relaxed">
+              <p className="font-serif text-xl italic text-white leading-relaxed">
                 "Every piece is crafted to become part of your story."
               </p>
-              <cite className="block mt-4 text-[11px] tracking-luxury uppercase text-gold font-sans not-italic">
+              <cite className="block mt-4 text-xs tracking-luxury uppercase text-amber-400 font-sans not-italic">
                 — The Founders
               </cite>
             </motion.blockquote>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 mt-14 pt-10 border-t border-ivory/10">
+            <div className="grid grid-cols-3 gap-8 mt-14 pt-10 border-t border-white/10">
               {[
                 { value: "25+", label: "Years of Craft" },
                 { value: "500+", label: "Unique Designs" },
@@ -127,10 +126,10 @@ export const CraftsmanshipSection = () => {
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
                 >
-                  <span className="font-serif text-3xl md:text-4xl text-gold-gradient">
+                  <span className="font-serif text-3xl md:text-4xl text-amber-400">
                     {stat.value}
                   </span>
-                  <p className="text-[10px] tracking-luxury uppercase text-ivory/50 mt-2 font-sans">
+                  <p className="text-[10px] tracking-luxury uppercase text-neutral-400 mt-2 font-sans">
                     {stat.label}
                   </p>
                 </motion.div>

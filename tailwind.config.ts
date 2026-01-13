@@ -62,6 +62,7 @@ export default {
           DEFAULT: "hsl(var(--gold))",
           dark: "hsl(var(--gold-dark))",
           light: "hsl(var(--gold-light))",
+          shimmer: "hsl(var(--gold-shimmer))",
         },
         cream: {
           DEFAULT: "hsl(var(--cream))",
@@ -71,10 +72,13 @@ export default {
           DEFAULT: "hsl(var(--charcoal))",
           light: "hsl(var(--charcoal-light))",
         },
+        ivory: {
+          DEFAULT: "hsl(var(--ivory))",
+        },
       },
       fontFamily: {
-        serif: ["Playfair Display", "Georgia", "serif"],
-        sans: ["Inter", "system-ui", "sans-serif"],
+        serif: ["'Cormorant Garamond'", "Georgia", "serif"],
+        sans: ["'Outfit'", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
