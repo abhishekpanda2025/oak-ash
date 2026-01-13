@@ -288,7 +288,7 @@ export const HeroSection = () => {
           <motion.p 
             className="hero-subtitle text-xs md:text-sm tracking-luxury uppercase mb-6 md:mb-8 font-sans font-light text-amber-200"
           >
-            New Collection 2024
+            New Collection 2026
           </motion.p>
 
           {/* Animated Title */}
