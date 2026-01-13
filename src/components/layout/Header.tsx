@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ShoppingBag, Heart, User, Menu, X, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useCartStore } from "@/stores/cartStore";
+import gsap from "gsap";
 
 const navigationItems = [
   {
@@ -13,11 +15,11 @@ const navigationItems = [
     href: "/jewellery",
     submenu: {
       categories: [
-        { label: "Earrings", href: "/jewellery/earrings" },
-        { label: "Rings", href: "/jewellery/rings" },
-        { label: "Necklaces", href: "/jewellery/necklaces" },
-        { label: "Bangles", href: "/jewellery/bangles" },
-        { label: "Bracelets", href: "/jewellery/bracelets" },
+        { label: "Earrings", href: "/jewellery?category=earrings" },
+        { label: "Rings", href: "/jewellery?category=rings" },
+        { label: "Necklaces", href: "/jewellery?category=necklaces" },
+        { label: "Bangles", href: "/jewellery?category=bangles" },
+        { label: "Bracelets", href: "/jewellery?category=bracelets" },
         { label: "View All", href: "/jewellery" },
       ],
       collections: [
@@ -42,15 +44,56 @@ const navigationItems = [
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  
+  const { setOpen: setCartOpen, getTotalItems } = useCartStore();
+  const cartCount = getTotalItems();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // GSAP animation on mount
+  useEffect(() => {
+    if (headerRef.current) {
+      gsap.fromTo(
+        headerRef.current,
+        { y: -100, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
+      );
+    }
+  }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
+    <header
+      ref={headerRef}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled
+          ? "bg-background/98 backdrop-blur-md shadow-soft"
+          : "bg-transparent"
+      }`}
+    >
       {/* Announcement Bar */}
-      <div className="bg-foreground text-background text-center py-2 px-4">
+      <motion.div
+        className={`text-center py-2 px-4 transition-all duration-300 ${
+          isScrolled
+            ? "bg-foreground text-background"
+            : "bg-foreground/90 text-background"
+        }`}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
         <p className="text-xs tracking-luxury uppercase font-sans">
           Complimentary shipping on orders over $150
         </p>
-      </div>
+      </motion.div>
 
       {/* Main Header */}
       <div className="container-luxury">
@@ -66,11 +109,11 @@ export const Header = () => {
 
           {/* Logo */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
-            <motion.h1 
-              className="text-xl md:text-2xl font-serif font-semibold tracking-wide"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+            <motion.h1
+              className={`text-xl md:text-2xl font-serif font-semibold tracking-wide transition-colors ${
+                isScrolled ? "text-foreground" : "text-foreground"
+              }`}
+              whileHover={{ scale: 1.02 }}
             >
               OAK & ASH
             </motion.h1>
@@ -104,7 +147,7 @@ export const Header = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 bg-card shadow-elegant border border-border rounded-sm min-w-[400px] p-8"
+                        className="absolute top-full left-0 bg-card shadow-elegant border border-border min-w-[400px] p-8"
                       >
                         <div className="grid grid-cols-2 gap-8">
                           <div>
@@ -152,20 +195,30 @@ export const Header = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:text-primary transition-colors" aria-label="Search">
+            <Link to="/search" className="p-2 hover:text-primary transition-colors" aria-label="Search">
               <Search className="w-5 h-5" />
-            </button>
-            <button className="hidden md:block p-2 hover:text-primary transition-colors" aria-label="Account">
+            </Link>
+            <Link to="/account" className="hidden md:block p-2 hover:text-primary transition-colors" aria-label="Account">
               <User className="w-5 h-5" />
-            </button>
-            <button className="hidden md:block p-2 hover:text-primary transition-colors" aria-label="Wishlist">
+            </Link>
+            <Link to="/wishlist" className="hidden md:block p-2 hover:text-primary transition-colors" aria-label="Wishlist">
               <Heart className="w-5 h-5" />
-            </button>
-            <button className="p-2 hover:text-primary transition-colors relative" aria-label="Cart">
+            </Link>
+            <button
+              onClick={() => setCartOpen(true)}
+              className="p-2 hover:text-primary transition-colors relative"
+              aria-label="Cart"
+            >
               <ShoppingBag className="w-5 h-5" />
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center">
-                0
-              </span>
+              {cartCount > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center font-sans"
+                >
+                  {cartCount}
+                </motion.span>
+              )}
             </button>
           </div>
         </div>
