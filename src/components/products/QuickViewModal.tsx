@@ -127,17 +127,18 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[150]"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9999]"
           />
 
-          {/* Modal - Perfectly Centered on all screen sizes */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[150] w-[95vw] max-w-5xl max-h-[90vh] overflow-hidden bg-white shadow-2xl rounded-lg"
-          >
+          {/* Modal - Perfectly Centered using flex */}
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-5xl max-h-[90vh] overflow-hidden bg-white shadow-2xl rounded-lg pointer-events-auto"
+            >
             {/* Close Button */}
             <motion.button
               onClick={onClose}
@@ -401,6 +402,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
               </div>
             </div>
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

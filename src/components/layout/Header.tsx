@@ -6,6 +6,7 @@ import { useLocalCartStore } from "@/stores/localCartStore";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { SearchModal } from "@/components/search/SearchModal";
 import gsap from "gsap";
+import oaLogo from "@/assets/oa-logo.png";
 
 const navigationItems = [
   {
@@ -122,20 +123,33 @@ export const Header = () => {
             </button>
 
             {/* Logo - Always visible with proper contrast */}
-            <Link to="/" className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
-              <motion.h1
-                className="text-2xl md:text-3xl font-serif font-normal tracking-wide"
+            <Link to="/" className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 flex items-center gap-2">
+              <motion.div
+                className="flex items-center gap-2"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
               >
-                <span className={`transition-colors duration-500 ${shouldUseDarkText ? "text-neutral-900" : "text-white"}`}>
-                  OAK
-                </span>
-                <span className="text-amber-500 mx-1">&amp;</span>
-                <span className={`transition-colors duration-500 ${shouldUseDarkText ? "text-neutral-900" : "text-white"}`}>
-                  ASH
-                </span>
-              </motion.h1>
+                <img 
+                  src={oaLogo} 
+                  alt="OAK & ASH" 
+                  className="h-10 md:h-12 w-auto object-contain"
+                  style={{ 
+                    filter: shouldUseDarkText ? 'none' : 'brightness(0) invert(1)',
+                    mixBlendMode: 'normal'
+                  }}
+                />
+                <div className="hidden sm:block">
+                  <h1 className="text-xl md:text-2xl font-serif font-normal tracking-wide leading-none">
+                    <span className={`transition-colors duration-500 ${shouldUseDarkText ? "text-neutral-900" : "text-white"}`}>
+                      OAK
+                    </span>
+                    <span className="text-amber-500 mx-1">&amp;</span>
+                    <span className={`transition-colors duration-500 ${shouldUseDarkText ? "text-neutral-900" : "text-white"}`}>
+                      ASH
+                    </span>
+                  </h1>
+                </div>
+              </motion.div>
             </Link>
 
             {/* Desktop Navigation */}

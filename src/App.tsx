@@ -15,6 +15,7 @@ import About from "./pages/About";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Account from "./pages/Account";
+import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const AnimatedRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/eyewear" element={<Jewellery />} />
         <Route path="/contact" element={<About />} />
         <Route path="/faq" element={<About />} />
