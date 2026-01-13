@@ -14,6 +14,9 @@ import productRing from "@/assets/product-ring.jpg";
 import productBangle from "@/assets/product-bangle.jpg";
 import productPearlEarrings from "@/assets/product-pearl-earrings.jpg";
 import productSilverRings from "@/assets/product-silver-rings.jpg";
+import eyewearModel1 from "@/assets/eyewear-model-1.jpg";
+import eyewearModel2 from "@/assets/eyewear-model-2.jpg";
+import eyewearModel3 from "@/assets/eyewear-model-3.jpg";
 
 interface DemoProductCardProps {
   product: DemoProduct;
@@ -29,6 +32,10 @@ const getProductImage = (product: DemoProduct, index: number = 0): string => {
   if (product.category === "earrings") return index % 2 === 0 ? productEarrings : productPearlEarrings;
   if (product.category === "rings") return index % 2 === 0 ? productRing : productSilverRings;
   if (product.category === "bangles" || product.category === "bracelets") return productBangle;
+  if (product.category === "eyewear") {
+    const eyewearImages = [eyewearModel1, eyewearModel2, eyewearModel3];
+    return eyewearImages[parseInt(product.id) % eyewearImages.length];
+  }
   
   return images[parseInt(product.id) % images.length];
 };

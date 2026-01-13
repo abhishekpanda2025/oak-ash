@@ -7,6 +7,7 @@ import { AnimatePresence } from "framer-motion";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Jewellery from "./pages/Jewellery";
+import Eyewear from "./pages/Eyewear";
 import ProductDetail from "./pages/ProductDetail";
 import DemoProductDetail from "./pages/DemoProductDetail";
 import Collection from "./pages/Collection";
@@ -41,7 +42,7 @@ const AnimatedRoutes = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/account" element={<Account />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/eyewear" element={<Jewellery />} />
+        <Route path="/eyewear" element={<Eyewear />} />
         <Route path="/contact" element={<About />} />
         <Route path="/faq" element={<About />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

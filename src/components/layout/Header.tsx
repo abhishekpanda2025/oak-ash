@@ -6,7 +6,7 @@ import { useLocalCartStore } from "@/stores/localCartStore";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { SearchModal } from "@/components/search/SearchModal";
 import gsap from "gsap";
-import oaLogo from "@/assets/oa-logo.png";
+import oaLogo from "@/assets/oa-logo-new.png";
 
 const navigationItems = [
   {
