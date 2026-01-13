@@ -5,11 +5,18 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
-// Import images for products
+// Import jewellery images
 import productNecklace from "@/assets/product-necklace.jpg";
 import productEarrings from "@/assets/product-earrings.jpg";
 import productRing from "@/assets/product-ring.jpg";
 import productBangle from "@/assets/product-bangle.jpg";
+
+// Import eyewear images
+import eyewearProduct1 from "@/assets/eyewear-product-1.jpg";
+import eyewearProduct2 from "@/assets/eyewear-product-2.jpg";
+import eyewearProduct3 from "@/assets/eyewear-product-3.jpg";
+import eyewearProduct4 from "@/assets/eyewear-product-4.jpg";
+
 import { DemoProduct } from "@/data/demoProducts";
 import { PaymentIcons } from "@/components/layout/PaymentIcons";
 import { SimilarProducts } from "@/components/products/SimilarProducts";
@@ -20,6 +27,21 @@ const getProductImage = (product: DemoProduct): string => {
   if (product.category === "earrings") return productEarrings;
   if (product.category === "rings") return productRing;
   if (product.category === "bangles" || product.category === "bracelets") return productBangle;
+  
+  // Eyewear images
+  if (product.category === "eyewear") {
+    if (product.handle.includes("aviator") || product.handle.includes("monaco")) {
+      return eyewearProduct1;
+    }
+    if (product.handle.includes("cat-eye") || product.handle.includes("riviera")) {
+      return eyewearProduct3;
+    }
+    if (product.handle.includes("oversized") || product.handle.includes("capri")) {
+      return eyewearProduct4;
+    }
+    return eyewearProduct2;
+  }
+  
   return productNecklace;
 };
 
