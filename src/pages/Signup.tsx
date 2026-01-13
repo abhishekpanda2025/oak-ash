@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Check } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Check, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { LocalCartDrawer } from "@/components/cart/LocalCartDrawer";
 import { PageTransition, ScrollReveal } from "@/components/animations/PageTransition";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +21,7 @@ const Signup = () => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { signUp } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -39,14 +42,21 @@ const Signup = () => {
     
     setIsLoading(true);
     
-    // Simulate signup
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Account created!", {
-        description: "Welcome to OAK & ASH. Please check your email to verify your account.",
+    const fullName = `${formData.firstName} ${formData.lastName}`;
+    const { error } = await signUp(formData.email, formData.password, fullName);
+    
+    if (error) {
+      toast.error("Sign up failed", {
+        description: error.message,
       });
-      navigate("/login");
-    }, 1500);
+    } else {
+      toast.success("Account created!", {
+        description: "Welcome to OAK & ASH!",
+      });
+      navigate("/account");
+    }
+    
+    setIsLoading(false);
   };
 
   const passwordStrength = () => {
@@ -66,6 +76,7 @@ const Signup = () => {
     <PageTransition>
       <div className="min-h-screen bg-neutral-50">
         <Header />
+        <LocalCartDrawer />
         
         <section className="pt-32 pb-20 md:pt-40 md:pb-32">
           <div className="container-luxury">
@@ -258,11 +269,7 @@ const Signup = () => {
                     whileTap={{ scale: 0.98 }}
                   >
                     {isLoading ? (
-                      <motion.div
-                        className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       <>
                         Create Account

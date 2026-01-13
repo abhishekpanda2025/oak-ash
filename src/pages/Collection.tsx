@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { CartDrawer } from "@/components/cart/CartDrawer";
+import { LocalCartDrawer } from "@/components/cart/LocalCartDrawer";
 import { DemoProductCard } from "@/components/products/DemoProductCard";
 import { QuickViewModal } from "@/components/products/QuickViewModal";
 import { PageTransition, ScrollReveal, StaggerContainer, StaggerItem } from "@/components/animations/PageTransition";
@@ -24,15 +24,6 @@ const collectionImages: Record<string, string> = {
   "two-tone": craftsmanship,
 };
 
-const collectionAccents: Record<string, string> = {
-  "new-in": "from-primary/30 via-transparent to-transparent",
-  "gold": "from-amber-500/30 via-transparent to-transparent",
-  "silver": "from-slate-400/30 via-transparent to-transparent",
-  "pearl": "from-rose-200/40 via-transparent to-transparent",
-  "stones": "from-emerald-500/20 via-transparent to-transparent",
-  "two-tone": "from-primary/20 via-slate-400/20 to-transparent",
-};
-
 const Collection = () => {
   const { collectionId } = useParams<{ collectionId: string }>();
   const [quickViewProduct, setQuickViewProduct] = useState<DemoProduct | null>(null);
@@ -44,7 +35,7 @@ const Collection = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <CartDrawer />
+        <LocalCartDrawer />
         <div className="flex flex-col items-center justify-center min-h-screen pt-32">
           <h1 className="font-serif text-3xl mb-4">Collection not found</h1>
           <Link to="/jewellery" className="text-primary hover:underline font-sans">
@@ -57,13 +48,12 @@ const Collection = () => {
   }
 
   const heroImage = collectionImages[collectionId || ""] || heroJewelry;
-  const accentGradient = collectionAccents[collectionId || ""] || collectionAccents["new-in"];
 
   return (
     <PageTransition>
       <div className="min-h-screen bg-background">
         <Header />
-        <CartDrawer />
+        <LocalCartDrawer />
 
         {/* Hero Banner */}
         <section className="relative h-[70vh] min-h-[500px] overflow-hidden">
@@ -79,8 +69,8 @@ const Collection = () => {
               alt={collection.name}
               className="w-full h-full object-cover"
             />
-            <div className={`absolute inset-0 bg-gradient-to-t ${accentGradient}`} />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+            {/* Dark overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
           </motion.div>
 
           {/* Floating Particles */}
@@ -88,7 +78,7 @@ const Collection = () => {
             {[...Array(15)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-1 h-1 rounded-full bg-primary/60"
+                className="absolute w-1 h-1 rounded-full bg-amber-400/60"
                 initial={{
                   x: Math.random() * 100 + "%",
                   y: "110%",
@@ -118,23 +108,23 @@ const Collection = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <ol className="flex items-center gap-2 text-sm font-sans text-background/80">
+                <ol className="flex items-center gap-2 text-sm font-sans text-white/80">
                   <li>
-                    <Link to="/" className="hover:text-background transition-colors">Home</Link>
+                    <Link to="/" className="hover:text-amber-400 transition-colors">Home</Link>
                   </li>
-                  <li>/</li>
+                  <li className="text-white/60">/</li>
                   <li>
-                    <Link to="/jewellery" className="hover:text-background transition-colors">Jewellery</Link>
+                    <Link to="/jewellery" className="hover:text-amber-400 transition-colors">Jewellery</Link>
                   </li>
-                  <li>/</li>
-                  <li className="text-background">{collection.name}</li>
+                  <li className="text-white/60">/</li>
+                  <li className="text-amber-400 font-medium">{collection.name}</li>
                 </ol>
               </motion.nav>
 
               {/* Title */}
               <div className="overflow-hidden">
                 <motion.h1 
-                  className="font-serif text-5xl md:text-6xl lg:text-7xl text-background mb-4"
+                  className="font-serif text-5xl md:text-6xl lg:text-7xl text-white mb-4 drop-shadow-lg"
                   initial={{ y: 100, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -144,7 +134,7 @@ const Collection = () => {
               </div>
 
               <motion.p 
-                className="font-sans text-lg text-background/90 max-w-xl"
+                className="font-sans text-lg text-white/90 max-w-xl drop-shadow-md"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
@@ -153,37 +143,37 @@ const Collection = () => {
               </motion.p>
 
               <motion.div 
-                className="flex items-center gap-2 mt-6 text-sm text-background/70"
+                className="flex items-center gap-2 mt-6 text-sm text-amber-400"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
               >
                 <Sparkles className="w-4 h-4" />
-                <span className="font-sans">{products.length} exquisite pieces</span>
+                <span className="font-sans font-medium">{products.length} exquisite pieces</span>
               </motion.div>
             </div>
           </div>
         </section>
 
         {/* Products Section */}
-        <main className="py-20 md:py-28">
+        <main className="py-20 md:py-28 bg-white">
           <div className="container-luxury">
             {/* Filter Bar */}
             <ScrollReveal className="mb-12">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <Link 
                   to="/jewellery" 
-                  className="inline-flex items-center gap-2 text-sm font-sans text-muted-foreground hover:text-foreground transition-colors"
+                  className="inline-flex items-center gap-2 text-sm font-sans text-neutral-600 hover:text-amber-600 transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   View all collections
                 </Link>
 
                 <div className="flex items-center gap-4">
-                  <span className="text-sm font-sans text-muted-foreground">
+                  <span className="text-sm font-sans text-neutral-500">
                     {products.length} products
                   </span>
-                  <select className="px-4 py-2 bg-secondary text-sm font-sans border-0 focus:ring-1 focus:ring-primary">
+                  <select className="px-4 py-2 bg-neutral-100 text-sm font-sans border-0 focus:ring-1 focus:ring-amber-500 rounded">
                     <option>Sort by: Featured</option>
                     <option>Price: Low to High</option>
                     <option>Price: High to Low</option>
@@ -208,8 +198,8 @@ const Collection = () => {
               </StaggerContainer>
             ) : (
               <div className="text-center py-20">
-                <h3 className="font-serif text-2xl mb-4">Coming Soon</h3>
-                <p className="text-muted-foreground font-sans">
+                <h3 className="font-serif text-2xl mb-4 text-neutral-900">Coming Soon</h3>
+                <p className="text-neutral-600 font-sans">
                   This collection is being curated. Check back soon!
                 </p>
               </div>
@@ -218,10 +208,10 @@ const Collection = () => {
         </main>
 
         {/* Other Collections */}
-        <section className="py-20 bg-secondary">
+        <section className="py-20 bg-neutral-50">
           <div className="container-luxury">
             <ScrollReveal>
-              <h2 className="font-serif text-3xl md:text-4xl text-center mb-12">
+              <h2 className="font-serif text-3xl md:text-4xl text-center mb-12 text-neutral-900">
                 Explore More Collections
               </h2>
             </ScrollReveal>
@@ -241,9 +231,9 @@ const Collection = () => {
                         alt={col.name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-6">
-                        <h3 className="font-serif text-xl text-background group-hover:text-primary transition-colors">
+                        <h3 className="font-serif text-xl text-white group-hover:text-amber-400 transition-colors">
                           {col.name}
                         </h3>
                       </div>
