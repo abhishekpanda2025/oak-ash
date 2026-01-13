@@ -63,27 +63,56 @@ export const CraftsmanshipSection = () => {
             initial={{ opacity: 0, x: -60 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            onMouseEnter={() => setShowControls(true)}
+            onMouseLeave={() => setShowControls(false)}
           >
             <div className="relative aspect-[4/5] overflow-hidden">
-              <img
-                src={craftsmanshipImage}
-                alt="Artisan crafting jewelry"
+              {/* Autoplay Video */}
+              <video
+                ref={videoRef}
+                src={CRAFTSMANSHIP_VIDEO}
+                poster={craftsmanshipImage}
+                autoPlay
+                muted
+                loop
+                playsInline
                 className="w-full h-full object-cover"
               />
               
-              {/* Play button overlay for video */}
-              <motion.button
-                className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm group cursor-pointer"
-                whileHover={{ backgroundColor: "rgba(0,0,0,0.4)" }}
+              {/* Video Controls Overlay */}
+              <motion.div
+                className="absolute inset-0 flex items-center justify-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: showControls ? 1 : 0 }}
+                transition={{ duration: 0.3 }}
               >
-                <motion.div
-                  className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Play className="w-8 h-8 text-neutral-900 ml-1" fill="currentColor" />
-                </motion.div>
-              </motion.button>
+                <div className="flex items-center gap-4">
+                  <motion.button
+                    onClick={togglePlay}
+                    className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {isPlaying ? (
+                      <Pause className="w-6 h-6 text-neutral-900" fill="currentColor" />
+                    ) : (
+                      <Play className="w-6 h-6 text-neutral-900 ml-1" fill="currentColor" />
+                    )}
+                  </motion.button>
+                  <motion.button
+                    onClick={toggleMute}
+                    className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-lg"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {isMuted ? (
+                      <VolumeX className="w-5 h-5 text-neutral-900" />
+                    ) : (
+                      <Volume2 className="w-5 h-5 text-neutral-900" />
+                    )}
+                  </motion.button>
+                </div>
+              </motion.div>
               
               {/* Gold frame decoration */}
               <div className="absolute -inset-4 border border-amber-500/30 pointer-events-none" />
