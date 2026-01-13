@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { DemoProductCard } from "@/components/products/DemoProductCard";
+import { QuickViewModal } from "@/components/products/QuickViewModal";
 import { PageTransition, ScrollReveal, StaggerContainer, StaggerItem } from "@/components/animations/PageTransition";
-import { collections, getProductsByCollection, demoProducts } from "@/data/demoProducts";
+import { collections, getProductsByCollection, demoProducts, DemoProduct } from "@/data/demoProducts";
 import { ArrowLeft, Sparkles } from "lucide-react";
 
 // Import hero images
@@ -33,6 +35,7 @@ const collectionAccents: Record<string, string> = {
 
 const Collection = () => {
   const { collectionId } = useParams<{ collectionId: string }>();
+  const [quickViewProduct, setQuickViewProduct] = useState<DemoProduct | null>(null);
   
   const collection = collections.find(c => c.id === collectionId);
   const products = collectionId ? getProductsByCollection(collectionId) : demoProducts;
@@ -195,7 +198,11 @@ const Collection = () => {
               <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
                 {products.map((product, index) => (
                   <StaggerItem key={product.id}>
-                    <DemoProductCard product={product} index={index} />
+                    <DemoProductCard 
+                      product={product} 
+                      index={index} 
+                      onQuickView={(p) => setQuickViewProduct(p)}
+                    />
                   </StaggerItem>
                 ))}
               </StaggerContainer>
@@ -248,6 +255,12 @@ const Collection = () => {
         </section>
 
         <Footer />
+
+        <QuickViewModal
+          product={quickViewProduct}
+          isOpen={!!quickViewProduct}
+          onClose={() => setQuickViewProduct(null)}
+        />
       </div>
     </PageTransition>
   );

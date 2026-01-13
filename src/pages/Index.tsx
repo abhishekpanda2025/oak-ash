@@ -8,23 +8,26 @@ import { CollectionShowcase } from "@/components/home/CollectionShowcase";
 import { Testimonials } from "@/components/home/Testimonials";
 import { PromiseSection } from "@/components/home/PromiseSection";
 import { NewsletterPopup } from "@/components/home/NewsletterPopup";
+import { PageTransition } from "@/components/animations/PageTransition";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <CartDrawer />
-      <NewsletterPopup />
-      <main>
-        <HeroSection />
-        <FeaturedProducts />
-        <CraftsmanshipSection />
-        <CollectionShowcase />
-        <Testimonials />
-        <PromiseSection />
-      </main>
-      <Footer />
-    </div>
+    <PageTransition>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <CartDrawer />
+        <NewsletterPopup />
+        <main>
+          <HeroSection />
+          <FeaturedProducts />
+          <CraftsmanshipSection />
+          <CollectionShowcase />
+          <Testimonials />
+          <PromiseSection />
+        </main>
+        <Footer />
+      </div>
+    </PageTransition>
   );
 };
 

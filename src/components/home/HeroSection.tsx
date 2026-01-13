@@ -5,16 +5,92 @@ import { Link } from "react-router-dom";
 import gsap from "gsap";
 import heroImage from "@/assets/hero-jewelry.jpg";
 
-// Gold particle component
+// Floating jewelry icons with elegant animations
+const FloatingJewelry = ({ 
+  icon, 
+  delay, 
+  duration, 
+  startX, 
+  startY,
+  size = "text-2xl"
+}: { 
+  icon: string; 
+  delay: number; 
+  duration: number; 
+  startX: string;
+  startY: string;
+  size?: string;
+}) => (
+  <motion.div
+    className={`absolute ${size} pointer-events-none select-none`}
+    style={{ left: startX, top: startY }}
+    initial={{ opacity: 0, scale: 0, rotate: -20 }}
+    animate={{ 
+      opacity: [0, 0.8, 0.8, 0],
+      scale: [0.5, 1, 1, 0.5],
+      rotate: [0, 10, -10, 0],
+      y: [0, -100, -200, -300],
+      x: [0, 20, -20, 0],
+    }}
+    transition={{
+      duration,
+      delay,
+      repeat: Infinity,
+      ease: "easeInOut",
+    }}
+  >
+    {icon}
+  </motion.div>
+);
+
+// Diamond sparkle effect
+const DiamondSparkle = ({ delay, x, y }: { delay: number; x: string; y: string }) => (
+  <motion.div
+    className="absolute w-3 h-3 pointer-events-none"
+    style={{ left: x, top: y }}
+    initial={{ opacity: 0, scale: 0 }}
+    animate={{
+      opacity: [0, 1, 1, 0],
+      scale: [0, 1.2, 1, 0],
+      rotate: [0, 180, 360],
+    }}
+    transition={{
+      duration: 2,
+      delay,
+      repeat: Infinity,
+      ease: "easeInOut",
+    }}
+  >
+    <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
+      <path
+        d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+        fill="url(#diamondGradient)"
+      />
+      <defs>
+        <linearGradient id="diamondGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="hsl(43, 80%, 70%)" />
+          <stop offset="50%" stopColor="hsl(0, 0%, 100%)" />
+          <stop offset="100%" stopColor="hsl(43, 80%, 65%)" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </motion.div>
+);
+
+// Gold particle with shimmer
 const GoldParticle = ({ delay, duration, left }: { delay: number; duration: number; left: string }) => (
   <motion.div
-    className="absolute w-1 h-1 rounded-full bg-gold-shimmer"
-    style={{ left }}
+    className="absolute w-1.5 h-1.5 rounded-full"
+    style={{ 
+      left,
+      background: "linear-gradient(135deg, hsl(43, 80%, 70%) 0%, hsl(38, 60%, 52%) 50%, hsl(43, 80%, 65%) 100%)",
+      boxShadow: "0 0 10px hsl(43, 80%, 65% / 0.5)"
+    }}
     initial={{ y: "100vh", opacity: 0, scale: 0 }}
     animate={{ 
       y: "-100vh", 
       opacity: [0, 1, 1, 0],
-      scale: [0, 1, 1, 0],
+      scale: [0, 1.2, 1, 0],
       rotate: [0, 360, 720]
     }}
     transition={{
@@ -37,13 +113,37 @@ export const HeroSection = () => {
 
   // Generate particles
   const particles = useMemo(() => {
-    return Array.from({ length: 20 }).map((_, i) => ({
+    return Array.from({ length: 25 }).map((_, i) => ({
       id: i,
       delay: Math.random() * 10,
-      duration: 15 + Math.random() * 10,
+      duration: 12 + Math.random() * 8,
       left: `${Math.random() * 100}%`,
     }));
   }, []);
+
+  // Floating jewelry items
+  const jewelryItems = useMemo(() => [
+    { icon: "💍", delay: 0, duration: 8, startX: "10%", startY: "70%", size: "text-3xl" },
+    { icon: "✨", delay: 2, duration: 6, startX: "85%", startY: "60%", size: "text-2xl" },
+    { icon: "💎", delay: 1, duration: 7, startX: "20%", startY: "80%", size: "text-4xl" },
+    { icon: "📿", delay: 3, duration: 9, startX: "75%", startY: "75%", size: "text-3xl" },
+    { icon: "👑", delay: 4, duration: 8, startX: "90%", startY: "85%", size: "text-2xl" },
+    { icon: "💫", delay: 1.5, duration: 7, startX: "5%", startY: "60%", size: "text-xl" },
+    { icon: "🔗", delay: 2.5, duration: 6, startX: "95%", startY: "70%", size: "text-2xl" },
+    { icon: "💍", delay: 5, duration: 8, startX: "15%", startY: "90%", size: "text-2xl" },
+  ], []);
+
+  // Diamond sparkles
+  const sparkles = useMemo(() => [
+    { delay: 0, x: "25%", y: "30%" },
+    { delay: 0.5, x: "70%", y: "25%" },
+    { delay: 1, x: "80%", y: "45%" },
+    { delay: 1.5, x: "15%", y: "50%" },
+    { delay: 2, x: "60%", y: "65%" },
+    { delay: 2.5, x: "35%", y: "40%" },
+    { delay: 3, x: "85%", y: "35%" },
+    { delay: 3.5, x: "10%", y: "35%" },
+  ], []);
 
   useEffect(() => {
     if (textRef.current) {
@@ -95,13 +195,37 @@ export const HeroSection = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal/80 via-charcoal/50 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-transparent to-charcoal/20" />
         
-        {/* Soft light reflection */}
+        {/* Animated light reflections */}
         <motion.div 
-          className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-transparent"
-          animate={{ opacity: [0.3, 0.5, 0.3] }}
+          className="absolute inset-0"
+          style={{
+            background: "radial-gradient(circle at 30% 40%, hsl(43, 80%, 65% / 0.15) 0%, transparent 50%)"
+          }}
+          animate={{ 
+            opacity: [0.3, 0.6, 0.3],
+            scale: [1, 1.1, 1],
+          }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
+        <motion.div 
+          className="absolute inset-0"
+          style={{
+            background: "radial-gradient(circle at 70% 60%, hsl(43, 80%, 65% / 0.1) 0%, transparent 40%)"
+          }}
+          animate={{ 
+            opacity: [0.2, 0.5, 0.2],
+            scale: [1.1, 1, 1.1],
+          }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
       </motion.div>
+
+      {/* Diamond Sparkles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {sparkles.map((sparkle, i) => (
+          <DiamondSparkle key={i} {...sparkle} />
+        ))}
+      </div>
 
       {/* Gold Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -115,6 +239,13 @@ export const HeroSection = () => {
         ))}
       </div>
 
+      {/* Floating Jewelry */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {jewelryItems.map((item, i) => (
+          <FloatingJewelry key={i} {...item} />
+        ))}
+      </div>
+
       {/* Content */}
       <motion.div 
         ref={textRef} 
@@ -124,14 +255,17 @@ export const HeroSection = () => {
         <div className="max-w-3xl">
           <motion.p 
             className="hero-subtitle text-[11px] md:text-xs tracking-luxury uppercase mb-6 md:mb-8 font-sans font-light"
-            style={{ color: "hsl(var(--gold-light))" }}
+            style={{ color: "hsl(43, 80%, 70%)" }}
           >
             New Collection 2024
           </motion.p>
 
           <h1 className="font-serif text-display font-normal leading-tight mb-8 md:mb-10 overflow-hidden">
             <span className="hero-title-line block">Crafted by</span>
-            <span className="hero-title-line block italic text-gold-gradient">Passion.</span>
+            <span className="hero-title-line block">
+              <span className="italic text-gold-gradient">Passion</span>
+              <span className="text-primary font-light mx-1" style={{ fontFamily: "'Cormorant Garamond', serif" }}>&amp;</span>
+            </span>
             <span className="hero-title-line block">Worn Forever.</span>
           </h1>
 
@@ -141,7 +275,7 @@ export const HeroSection = () => {
 
           <div className="flex flex-col sm:flex-row gap-5">
             <Link
-              to="/new-in"
+              to="/collection/new-in"
               className="hero-cta group inline-flex items-center justify-center gap-3 btn-gold-shimmer text-charcoal px-10 py-4.5 text-[13px] tracking-wide-luxury uppercase font-sans font-medium transition-all duration-500 hover:shadow-gold"
             >
               Shop New In

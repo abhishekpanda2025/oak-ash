@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Eye, ShoppingBag, Check } from "lucide-react";
 import { DemoProduct } from "@/data/demoProducts";
-import { useCartStore } from "@/stores/cartStore";
+import { useWishlistStore } from "@/stores/wishlistStore";
 import { toast } from "sonner";
 
 // Import sample images
@@ -17,6 +17,7 @@ import productSilverRings from "@/assets/product-silver-rings.jpg";
 interface DemoProductCardProps {
   product: DemoProduct;
   index?: number;
+  onQuickView?: (product: DemoProduct) => void;
 }
 
 // Map products to images based on category
@@ -31,10 +32,12 @@ const getProductImage = (product: DemoProduct, index: number = 0): string => {
   return images[parseInt(product.id) % images.length];
 };
 
-export const DemoProductCard = ({ product, index = 0 }: DemoProductCardProps) => {
+export const DemoProductCard = ({ product, index = 0, onQuickView }: DemoProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  
+  const { addItem, removeItem, isInWishlist } = useWishlistStore();
+  const isWishlisted = isInWishlist(product.id);
   
   const productImage = getProductImage(product, index);
   const secondaryImage = getProductImage(product, index + 1);
@@ -42,10 +45,19 @@ export const DemoProductCard = ({ product, index = 0 }: DemoProductCardProps) =>
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-    toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist", {
-      position: "top-center",
-    });
+    if (isWishlisted) {
+      removeItem(product.id);
+      toast.success("Removed from wishlist", { position: "top-center" });
+    } else {
+      addItem(product);
+      toast.success("Added to wishlist", { position: "top-center" });
+    }
+  };
+
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onQuickView?.(product);
   };
 
   const handleQuickAdd = (e: React.MouseEvent) => {
@@ -106,7 +118,7 @@ export const DemoProductCard = ({ product, index = 0 }: DemoProductCardProps) =>
             }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             style={{
-              background: "linear-gradient(90deg, transparent 0%, hsl(var(--gold-shimmer) / 0.4) 50%, transparent 100%)",
+              background: "linear-gradient(90deg, transparent 0%, hsl(43, 80%, 65% / 0.4) 50%, transparent 100%)",
             }}
           />
 
@@ -153,6 +165,7 @@ export const DemoProductCard = ({ product, index = 0 }: DemoProductCardProps) =>
               <Heart className={`w-4 h-4 ${isWishlisted ? "fill-current" : ""}`} />
             </motion.button>
             <motion.button
+              onClick={handleQuickView}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               className="w-10 h-10 flex items-center justify-center bg-background/80 backdrop-blur-md text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
