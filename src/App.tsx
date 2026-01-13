@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { AuthProvider } from "@/hooks/useAuth";
+import { LoadingScreen } from "@/components/animations/LoadingScreen";
+import { useState, useEffect } from "react";
 import Index from "./pages/Index";
 import Jewellery from "./pages/Jewellery";
 import Eyewear from "./pages/Eyewear";
@@ -52,15 +54,46 @@ const AnimatedRoutes = () => {
   );
 };
 
+// Main App with Loading Screen
+const AppContent = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    // Check if user has already seen the loading screen in this session
+    const hasSeenLoading = sessionStorage.getItem('oakash-loaded');
+    if (hasSeenLoading) {
+      setIsLoading(false);
+      setShowContent(true);
+    }
+  }, []);
+
+  const handleLoadingComplete = () => {
+    sessionStorage.setItem('oakash-loaded', 'true');
+    setShowContent(true);
+  };
+
+  return (
+    <>
+      {isLoading && !sessionStorage.getItem('oakash-loaded') && (
+        <LoadingScreen onComplete={handleLoadingComplete} />
+      )}
+      {showContent && (
+        <BrowserRouter>
+          <AnimatedRoutes />
+        </BrowserRouter>
+      )}
+    </>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <AnimatedRoutes />
-        </BrowserRouter>
+        <AppContent />
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
