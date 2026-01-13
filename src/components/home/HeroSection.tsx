@@ -1,78 +1,96 @@
 import { motion } from "framer-motion";
+import { useInView } from "framer-motion";
+import { useRef, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import gsap from "gsap";
 import heroImage from "@/assets/hero-jewelry.jpg";
 
 export const HeroSection = () => {
+  const ref = useRef<HTMLElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (textRef.current) {
+      const tl = gsap.timeline({ delay: 0.5 });
+      
+      tl.fromTo(
+        ".hero-subtitle",
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
+      )
+      .fromTo(
+        ".hero-title-line",
+        { y: 100, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1, stagger: 0.15, ease: "power3.out" },
+        "-=0.4"
+      )
+      .fromTo(
+        ".hero-description",
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+        "-=0.4"
+      )
+      .fromTo(
+        ".hero-cta",
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" },
+        "-=0.3"
+      );
+    }
+  }, []);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        <motion.img
+    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background Image with Parallax */}
+      <motion.div
+        className="absolute inset-0"
+        initial={{ scale: 1.1 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 2, ease: "easeOut" }}
+      >
+        <img
           src={heroImage}
           alt="Premium jewelry collection"
           className="w-full h-full object-cover"
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/60 via-foreground/40 to-transparent" />
-      </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 via-foreground/50 to-transparent" />
+        {/* Subtle glow effect */}
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 via-transparent to-transparent" />
+      </motion.div>
 
       {/* Content */}
-      <div className="relative z-10 container-luxury text-background">
+      <div ref={textRef} className="relative z-10 container-luxury text-background pt-20">
         <div className="max-w-2xl">
-          <motion.p
-            className="text-xs md:text-sm tracking-luxury uppercase mb-4 md:mb-6 text-primary font-sans"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+          <p className="hero-subtitle text-xs md:text-sm tracking-luxury uppercase mb-4 md:mb-6 text-primary font-sans">
             New Collection 2024
-          </motion.p>
+          </p>
 
-          <motion.h1
-            className="font-serif text-4xl md:text-6xl lg:text-7xl font-medium leading-tight mb-6 md:mb-8"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            Craftsmanship
-            <br />
-            <span className="italic text-primary">Meets Timeless</span>
-            <br />
-            Elegance
-          </motion.h1>
+          <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-medium leading-tight mb-6 md:mb-8 overflow-hidden">
+            <span className="hero-title-line block">Crafted by</span>
+            <span className="hero-title-line block italic text-primary">Passion.</span>
+            <span className="hero-title-line block">Worn Forever.</span>
+          </h1>
 
-          <motion.p
-            className="text-sm md:text-base text-background/80 max-w-md mb-8 md:mb-10 font-sans leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            Discover our curated collection of premium jewelry, where every piece tells a story of artistry and elegance.
-          </motion.p>
+          <p className="hero-description text-sm md:text-base text-background/80 max-w-md mb-8 md:mb-10 font-sans leading-relaxed">
+            Discover our curated collection of premium jewelry, where every piece tells a story of artistry and timeless elegance.
+          </p>
 
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
-          >
+          <div className="flex flex-col sm:flex-row gap-4">
             <Link
               to="/new-in"
-              className="group inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-4 text-sm tracking-luxury uppercase font-sans btn-luxury"
+              className="hero-cta group inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-4 text-sm tracking-luxury uppercase font-sans btn-luxury"
             >
               Shop New In
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
               to="/jewellery"
-              className="inline-flex items-center justify-center gap-2 border border-background/50 text-background px-8 py-4 text-sm tracking-luxury uppercase font-sans hover:bg-background/10 transition-colors"
+              className="hero-cta inline-flex items-center justify-center gap-2 border border-background/50 text-background px-8 py-4 text-sm tracking-luxury uppercase font-sans hover:bg-background/10 transition-colors"
             >
               Explore Collections
             </Link>
-          </motion.div>
+          </div>
         </div>
       </div>
 
@@ -81,7 +99,7 @@ export const HeroSection = () => {
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
+        transition={{ delay: 2 }}
       >
         <span className="text-background/60 text-xs tracking-luxury uppercase font-sans">
           Scroll
