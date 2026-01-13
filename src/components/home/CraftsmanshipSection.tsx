@@ -1,11 +1,18 @@
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
-import { Play } from "lucide-react";
+import { useRef, useState } from "react";
+import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import craftsmanshipImage from "@/assets/craftsmanship.jpg";
+
+// Video URL - using a jewelry craftsmanship video placeholder
+const CRAFTSMANSHIP_VIDEO = "https://player.vimeo.com/external/519695326.hd.mp4?s=20f8c752b4e285f58d6aed7b6edb9c20e7fc4e7e&profile_id=175";
 
 export const CraftsmanshipSection = () => {
   const ref = useRef(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [showControls, setShowControls] = useState(false);
   
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -13,6 +20,24 @@ export const CraftsmanshipSection = () => {
   });
   
   const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
 
   return (
     <section ref={ref} className="relative py-32 md:py-40 overflow-hidden">
