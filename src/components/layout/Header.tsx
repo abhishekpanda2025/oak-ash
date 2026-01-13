@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ShoppingBag, Heart, User, Menu, X, ChevronDown } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useCartStore } from "@/stores/cartStore";
+import { useLocalCartStore } from "@/stores/localCartStore";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { SearchModal } from "@/components/search/SearchModal";
 import gsap from "gsap";
@@ -51,7 +51,7 @@ export const Header = () => {
   const headerRef = useRef<HTMLElement>(null);
   const location = useLocation();
   
-  const { setOpen: setCartOpen, getTotalItems } = useCartStore();
+  const { setOpen: setCartOpen, getTotalItems } = useLocalCartStore();
   const { items: wishlistItems } = useWishlistStore();
   const cartCount = getTotalItems();
   const wishlistCount = wishlistItems.length;

@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import { Heart, ShoppingBag, Trash2, ArrowLeft, Sparkles } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { CartDrawer } from "@/components/cart/CartDrawer";
+import { LocalCartDrawer } from "@/components/cart/LocalCartDrawer";
 import { PageTransition, ScrollReveal, StaggerContainer, StaggerItem } from "@/components/animations/PageTransition";
 import { useWishlistStore } from "@/stores/wishlistStore";
+import { useLocalCartStore } from "@/stores/localCartStore";
 import { toast } from "sonner";
 
 // Import images
@@ -30,6 +31,7 @@ const getProductImage = (product: DemoProduct): string => {
 
 const Wishlist = () => {
   const { items, removeItem, clearWishlist } = useWishlistStore();
+  const { addItem: addToCart } = useLocalCartStore();
 
   const handleRemove = (id: string, title: string) => {
     removeItem(id);
@@ -38,9 +40,10 @@ const Wishlist = () => {
     });
   };
 
-  const handleAddToCart = (title: string) => {
-    toast.success("Added to cart!", {
-      description: title,
+  const handleAddToCart = (item: DemoProduct) => {
+    addToCart(item, 1);
+    toast.success("Added to bag!", {
+      description: item.title,
     });
   };
 
@@ -53,7 +56,7 @@ const Wishlist = () => {
     <PageTransition>
       <div className="min-h-screen bg-background">
         <Header />
-        <CartDrawer />
+        <LocalCartDrawer />
 
         <main className="pt-32 pb-20">
           <div className="container-luxury">
@@ -172,7 +175,7 @@ const Wishlist = () => {
                           <div className="flex items-center justify-between">
                             <span className="font-serif text-lg text-primary">${item.price}</span>
                             <motion.button
-                              onClick={() => handleAddToCart(item.title)}
+                              onClick={() => handleAddToCart(item)}
                               className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-primary hover:text-primary-foreground text-sm font-sans transition-colors"
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}

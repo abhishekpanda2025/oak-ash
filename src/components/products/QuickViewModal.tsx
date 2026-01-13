@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { DemoProduct } from "@/data/demoProducts";
 import { useWishlistStore } from "@/stores/wishlistStore";
+import { useLocalCartStore } from "@/stores/localCartStore";
 import { toast } from "sonner";
 
 // Import images
@@ -41,6 +42,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const autoScrollRef = useRef<NodeJS.Timeout | null>(null);
   const { addItem, removeItem, isInWishlist } = useWishlistStore();
+  const { addItem: addToCart } = useLocalCartStore();
 
   // Reset state when product changes
   useEffect(() => {
@@ -91,7 +93,8 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
   };
 
   const handleAddToCart = () => {
-    toast.success("Added to cart!", {
+    addToCart(product, quantity);
+    toast.success("Added to bag!", {
       description: `${product.title} × ${quantity}`,
     });
     onClose();
@@ -124,28 +127,28 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100]"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[150]"
           />
 
-          {/* Modal - Centered on all screen sizes */}
+          {/* Modal - Perfectly Centered on all screen sizes */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-[100] md:w-[90vw] md:max-w-5xl md:max-h-[90vh] overflow-auto bg-white shadow-2xl flex items-center justify-center"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[150] w-[95vw] max-w-5xl max-h-[90vh] overflow-hidden bg-white shadow-2xl rounded-lg"
           >
             {/* Close Button */}
             <motion.button
               onClick={onClose}
-              className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-sm hover:bg-amber-500 hover:text-white transition-colors shadow-lg"
+              className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-sm hover:bg-amber-500 hover:text-white transition-colors shadow-lg rounded-full"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
               <X className="w-5 h-5" />
             </motion.button>
 
-            <div className="grid md:grid-cols-2 gap-0 w-full h-full md:h-auto">
+            <div className="grid md:grid-cols-2 gap-0 w-full h-full max-h-[90vh] overflow-auto">
               {/* Image Gallery with Zoom */}
               <div 
                 ref={imageContainerRef}
