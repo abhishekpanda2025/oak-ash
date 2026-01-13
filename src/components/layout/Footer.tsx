@@ -6,9 +6,9 @@ import { PaymentIcons } from "./PaymentIcons";
 const footerLinks = {
   company: [
     { label: "About OAK & ASH", href: "/about" },
-    { label: "FAQ", href: "/faq" },
+    { label: "Contact Us", href: "/contact" },
     { label: "Search", href: "/search" },
-    { label: "Contact us", href: "/contact" },
+    { label: "FAQ", href: "/faq" },
   ],
   support: [
     { label: "Refund Policy", href: "/refunds" },
