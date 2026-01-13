@@ -6,8 +6,9 @@ import { DemoProduct } from "@/data/demoProducts";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { useLocalCartStore } from "@/stores/localCartStore";
 import { toast } from "sonner";
+import { SimilarProducts } from "./SimilarProducts";
 
-// Import images
+// Import jewellery images
 import productNecklace from "@/assets/product-necklace.jpg";
 import productEarrings from "@/assets/product-earrings.jpg";
 import productRing from "@/assets/product-ring.jpg";
@@ -16,14 +17,49 @@ import productPearlEarrings from "@/assets/product-pearl-earrings.jpg";
 import productSilverRings from "@/assets/product-silver-rings.jpg";
 import modelJewelry from "@/assets/model-jewelry.jpg";
 
+// Import eyewear images
+import eyewearModel1 from "@/assets/eyewear-model-1.jpg";
+import eyewearModel2 from "@/assets/eyewear-model-2.jpg";
+import eyewearModel3 from "@/assets/eyewear-model-3.jpg";
+import eyewearModel4 from "@/assets/eyewear-model-4.jpg";
+import eyewearModel5 from "@/assets/eyewear-model-5.jpg";
+import eyewearProduct1 from "@/assets/eyewear-product-1.jpg";
+import eyewearProduct2 from "@/assets/eyewear-product-2.jpg";
+import eyewearProduct3 from "@/assets/eyewear-product-3.jpg";
+import eyewearProduct4 from "@/assets/eyewear-product-4.jpg";
+import eyewearDetail from "@/assets/eyewear-detail.jpg";
+
 interface QuickViewModalProps {
   product: DemoProduct | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-// Get 5 product images including model shots
+// Get 5 product images including model shots and different angles
 const getProductImages = (product: DemoProduct): string[] => {
+  // Eyewear images - show product angles first, then models
+  if (product.category === "eyewear") {
+    // Different images based on product type
+    if (product.handle.includes("aviator") || product.handle.includes("monaco")) {
+      return [eyewearProduct1, eyewearProduct2, eyewearDetail, eyewearModel1, eyewearModel3];
+    }
+    if (product.handle.includes("cat-eye") || product.handle.includes("riviera")) {
+      return [eyewearProduct3, eyewearProduct2, eyewearDetail, eyewearModel2, eyewearModel5];
+    }
+    if (product.handle.includes("oversized") || product.handle.includes("capri")) {
+      return [eyewearProduct4, eyewearProduct1, eyewearDetail, eyewearModel4, eyewearModel1];
+    }
+    if (product.handle.includes("windsor") || product.handle.includes("optical")) {
+      return [eyewearProduct3, eyewearProduct2, eyewearDetail, eyewearModel3, eyewearModel4];
+    }
+    if (product.handle.includes("malibu") || product.handle.includes("sport")) {
+      return [eyewearProduct1, eyewearProduct4, eyewearDetail, eyewearModel5, eyewearModel2];
+    }
+    // Default eyewear
+    return [eyewearProduct1, eyewearProduct2, eyewearProduct3, eyewearModel1, eyewearModel2];
+  }
+
+  // Jewellery images
   const imageMap: Record<string, string[]> = {
     necklaces: [productNecklace, modelJewelry, productPearlEarrings, productEarrings, productNecklace],
     earrings: [productEarrings, modelJewelry, productPearlEarrings, productNecklace, productEarrings],
@@ -309,7 +345,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
 
                   {/* Material & Care */}
                   <motion.div
-                    className="space-y-4 mb-8"
+                    className="space-y-4 mb-6"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.25 }}
@@ -332,7 +368,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
 
                   {/* Quantity */}
                   <motion.div
-                    className="mb-6"
+                    className="mb-4"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
@@ -358,6 +394,19 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                       </button>
                     </div>
                   </motion.div>
+
+                  {/* Similar Products Section in Modal */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35 }}
+                    className="mb-4"
+                  >
+                    <SimilarProducts 
+                      currentProduct={product} 
+                      title="Complete Your Look" 
+                    />
+                  </motion.div>
                 </div>
 
                 {/* Actions */}
@@ -365,7 +414,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                   className="space-y-3"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.35 }}
+                  transition={{ delay: 0.4 }}
                 >
                   <div className="flex gap-3">
                     <motion.button

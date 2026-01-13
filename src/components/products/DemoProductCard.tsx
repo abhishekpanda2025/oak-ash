@@ -7,13 +7,19 @@ import { useWishlistStore } from "@/stores/wishlistStore";
 import { useLocalCartStore } from "@/stores/localCartStore";
 import { toast } from "sonner";
 
-// Import sample images
+// Import jewellery images
 import productNecklace from "@/assets/product-necklace.jpg";
 import productEarrings from "@/assets/product-earrings.jpg";
 import productRing from "@/assets/product-ring.jpg";
 import productBangle from "@/assets/product-bangle.jpg";
 import productPearlEarrings from "@/assets/product-pearl-earrings.jpg";
 import productSilverRings from "@/assets/product-silver-rings.jpg";
+
+// Import eyewear images
+import eyewearProduct1 from "@/assets/eyewear-product-1.jpg";
+import eyewearProduct2 from "@/assets/eyewear-product-2.jpg";
+import eyewearProduct3 from "@/assets/eyewear-product-3.jpg";
+import eyewearProduct4 from "@/assets/eyewear-product-4.jpg";
 import eyewearModel1 from "@/assets/eyewear-model-1.jpg";
 import eyewearModel2 from "@/assets/eyewear-model-2.jpg";
 import eyewearModel3 from "@/assets/eyewear-model-3.jpg";
@@ -32,9 +38,18 @@ const getProductImage = (product: DemoProduct, index: number = 0): string => {
   if (product.category === "earrings") return index % 2 === 0 ? productEarrings : productPearlEarrings;
   if (product.category === "rings") return index % 2 === 0 ? productRing : productSilverRings;
   if (product.category === "bangles" || product.category === "bracelets") return productBangle;
+  
+  // Eyewear - use product images for primary and model images for secondary
   if (product.category === "eyewear") {
-    const eyewearImages = [eyewearModel1, eyewearModel2, eyewearModel3];
-    return eyewearImages[parseInt(product.id) % eyewearImages.length];
+    const eyewearProductImages = [eyewearProduct1, eyewearProduct2, eyewearProduct3, eyewearProduct4];
+    const eyewearModelImages = [eyewearModel1, eyewearModel2, eyewearModel3];
+    
+    // Primary image: product shot, Secondary image: model wearing
+    if (index % 2 === 0) {
+      return eyewearProductImages[parseInt(product.id) % eyewearProductImages.length];
+    } else {
+      return eyewearModelImages[parseInt(product.id) % eyewearModelImages.length];
+    }
   }
   
   return images[parseInt(product.id) % images.length];
