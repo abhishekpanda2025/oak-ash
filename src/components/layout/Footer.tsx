@@ -1,80 +1,90 @@
 import { Link } from "react-router-dom";
-import { Instagram, Facebook, Twitter } from "lucide-react";
+import { Instagram, Facebook } from "lucide-react";
+import { motion } from "framer-motion";
 
 const footerLinks = {
-  shop: [
-    { label: "New Arrivals", href: "/new-in" },
-    { label: "Earrings", href: "/jewellery/earrings" },
-    { label: "Rings", href: "/jewellery/rings" },
-    { label: "Necklaces", href: "/jewellery/necklaces" },
-    { label: "Bracelets", href: "/jewellery/bracelets" },
-  ],
-  collections: [
-    { label: "Gold Collection", href: "/collections/gold" },
-    { label: "Silver Collection", href: "/collections/silver" },
-    { label: "Pearl Collection", href: "/collections/pearl" },
-    { label: "Stones Collection", href: "/collections/stones" },
-  ],
-  help: [
-    { label: "Shipping Policy", href: "/shipping" },
-    { label: "Returns & Refunds", href: "/refunds" },
+  company: [
+    { label: "About OAK & ASH", href: "/about" },
     { label: "FAQ", href: "/faq" },
-    { label: "Contact Us", href: "/contact" },
+    { label: "Search", href: "/search" },
+    { label: "Contact us", href: "/contact" },
   ],
-  about: [
-    { label: "Our Story", href: "/about" },
-    { label: "Craftsmanship", href: "/craftsmanship" },
+  support: [
+    { label: "Refund Policy", href: "/refunds" },
+    { label: "Shipping Policy", href: "/shipping" },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms of Service", href: "/terms" },
+  ],
+  business: [
+    { label: "Want to become a reseller?", href: "/b2b" },
   ],
 };
 
 export const Footer = () => {
   return (
-    <footer className="bg-foreground text-background">
+    <footer className="bg-charcoal text-ivory">
       {/* Newsletter Section */}
-      <div className="border-b border-background/10">
-        <div className="container-luxury py-16 md:py-20">
+      <div className="border-b border-ivory/10">
+        <div className="container-luxury py-20 md:py-28">
           <div className="max-w-2xl mx-auto text-center">
-            <h3 className="font-serif text-2xl md:text-3xl mb-4">
-              Join the OAK & ASH Circle
-            </h3>
-            <p className="text-background/70 mb-8 font-sans text-sm">
-              Be the first to discover new collections, exclusive offers, and the stories behind our craftsmanship.
-            </p>
-            <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 bg-transparent border border-background/30 px-4 py-3 text-sm font-sans placeholder:text-background/50 focus:outline-none focus:border-primary transition-colors"
-                required
-              />
-              <button
-                type="submit"
-                className="bg-primary text-primary-foreground px-8 py-3 text-sm tracking-luxury uppercase font-sans hover:bg-primary/90 transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <p className="text-[11px] tracking-luxury uppercase text-gold mb-4 font-sans font-light">
+                Stay Connected
+              </p>
+              <h3 className="font-serif text-3xl md:text-4xl mb-5 leading-tight">
+                Join the OAK & ASH Circle
+              </h3>
+              <p className="text-ivory/60 mb-10 font-sans font-light text-sm max-w-md mx-auto leading-relaxed">
+                Be the first to discover new collections, exclusive offers, and the stories behind our craftsmanship.
+              </p>
+              
+              <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 bg-transparent border-b border-ivory/30 px-0 py-3 text-sm font-sans font-light placeholder:text-ivory/40 focus:outline-none focus:border-gold transition-colors"
+                  required
+                />
+                <motion.button
+                  type="submit"
+                  className="btn-gold-shimmer text-charcoal px-8 py-3.5 text-[11px] tracking-wide-luxury uppercase font-sans font-medium"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Subscribe
+                </motion.button>
+              </form>
+            </motion.div>
           </div>
         </div>
       </div>
 
       {/* Main Footer */}
       <div className="container-luxury py-16 md:py-20">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 md:gap-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 md:gap-12">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1 mb-8 lg:mb-0">
-            <h2 className="font-serif text-xl font-semibold mb-4">OAK & ASH</h2>
-            <p className="text-background/70 text-sm font-sans leading-relaxed mb-6">
+            <h2 className="font-serif text-2xl mb-5">
+              <span>OAK</span>
+              <span className="text-gold mx-1">&</span>
+              <span>ASH</span>
+            </h2>
+            <p className="text-ivory/50 text-sm font-sans font-light leading-relaxed mb-8">
               Inspired by the strength of oak and the grace of ash — jewelry crafted with passion, worn forever.
             </p>
-            <div className="flex gap-4">
+            
+            {/* Social Links */}
+            <div className="flex gap-3">
               <a
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 border border-background/30 hover:border-primary hover:text-primary transition-colors"
+                className="w-10 h-10 border border-ivory/20 flex items-center justify-center hover:border-gold hover:text-gold transition-all duration-300"
                 aria-label="Instagram"
               >
                 <Instagram className="w-4 h-4" />
@@ -83,32 +93,25 @@ export const Footer = () => {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 border border-background/30 hover:border-primary hover:text-primary transition-colors"
+                className="w-10 h-10 border border-ivory/20 flex items-center justify-center hover:border-gold hover:text-gold transition-all duration-300"
                 aria-label="Facebook"
               >
                 <Facebook className="w-4 h-4" />
               </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 border border-background/30 hover:border-primary hover:text-primary transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-4 h-4" />
-              </a>
             </div>
           </div>
 
-          {/* Shop Links */}
+          {/* Company Links */}
           <div>
-            <h4 className="text-xs tracking-luxury uppercase mb-4 font-sans">Shop</h4>
-            <ul className="space-y-3">
-              {footerLinks.shop.map((link) => (
+            <h4 className="text-[11px] tracking-luxury uppercase mb-6 font-sans font-light text-ivory/70">
+              Company
+            </h4>
+            <ul className="space-y-4">
+              {footerLinks.company.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.href}
-                    className="text-background/70 text-sm font-sans hover:text-primary transition-colors"
+                    className="text-ivory/50 text-sm font-sans font-light hover:text-gold transition-colors duration-300"
                   >
                     {link.label}
                   </Link>
@@ -117,15 +120,17 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Collections Links */}
+          {/* Customer Support Links */}
           <div>
-            <h4 className="text-xs tracking-luxury uppercase mb-4 font-sans">Collections</h4>
-            <ul className="space-y-3">
-              {footerLinks.collections.map((link) => (
+            <h4 className="text-[11px] tracking-luxury uppercase mb-6 font-sans font-light text-ivory/70">
+              Customer Support
+            </h4>
+            <ul className="space-y-4">
+              {footerLinks.support.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.href}
-                    className="text-background/70 text-sm font-sans hover:text-primary transition-colors"
+                    className="text-ivory/50 text-sm font-sans font-light hover:text-gold transition-colors duration-300"
                   >
                     {link.label}
                   </Link>
@@ -134,15 +139,17 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Help Links */}
+          {/* B2B Links */}
           <div>
-            <h4 className="text-xs tracking-luxury uppercase mb-4 font-sans">Help</h4>
-            <ul className="space-y-3">
-              {footerLinks.help.map((link) => (
+            <h4 className="text-[11px] tracking-luxury uppercase mb-6 font-sans font-light text-ivory/70">
+              Retailer & B2B
+            </h4>
+            <ul className="space-y-4">
+              {footerLinks.business.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.href}
-                    className="text-background/70 text-sm font-sans hover:text-primary transition-colors"
+                    className="text-ivory/50 text-sm font-sans font-light hover:text-gold transition-colors duration-300"
                   >
                     {link.label}
                   </Link>
@@ -151,37 +158,64 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* About Links */}
+          {/* Follow Us */}
           <div>
-            <h4 className="text-xs tracking-luxury uppercase mb-4 font-sans">About</h4>
-            <ul className="space-y-3">
-              {footerLinks.about.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    to={link.href}
-                    className="text-background/70 text-sm font-sans hover:text-primary transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+            <h4 className="text-[11px] tracking-luxury uppercase mb-6 font-sans font-light text-ivory/70">
+              Follow Us
+            </h4>
+            <ul className="space-y-4">
+              <li>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-ivory/50 text-sm font-sans font-light hover:text-gold transition-colors duration-300"
+                >
+                  Instagram
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-ivory/50 text-sm font-sans font-light hover:text-gold transition-colors duration-300"
+                >
+                  Facebook
+                </a>
+              </li>
             </ul>
           </div>
         </div>
 
-        {/* Payment Methods & Copyright */}
-        <div className="border-t border-background/10 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-background/50 text-xs font-sans">
-            © 2024 OAK & ASH. All rights reserved.
-          </p>
-          <div className="flex items-center gap-3">
-            <span className="text-background/50 text-xs font-sans">We accept:</span>
-            <div className="flex gap-2 text-xs text-background/70">
-              <span className="px-2 py-1 border border-background/20 rounded-sm">Visa</span>
-              <span className="px-2 py-1 border border-background/20 rounded-sm">Mastercard</span>
-              <span className="px-2 py-1 border border-background/20 rounded-sm">Amex</span>
-              <span className="px-2 py-1 border border-background/20 rounded-sm">PayPal</span>
-              <span className="px-2 py-1 border border-background/20 rounded-sm">Apple Pay</span>
+        {/* Divider */}
+        <div className="border-t border-ivory/10 mt-16 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            {/* Copyright */}
+            <p className="text-ivory/40 text-xs font-sans font-light">
+              © 2024 OAK & ASH. All rights reserved.
+            </p>
+            
+            {/* Currency & Payment */}
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              {/* Currency Selector */}
+              <select className="bg-transparent text-ivory/50 text-xs font-sans border border-ivory/20 px-3 py-2 focus:outline-none focus:border-gold cursor-pointer">
+                <option value="usd">USD $</option>
+                <option value="eur">EUR €</option>
+                <option value="gbp">GBP £</option>
+              </select>
+              
+              {/* Payment Icons */}
+              <div className="flex items-center gap-2">
+                <span className="text-ivory/40 text-xs font-sans">We accept:</span>
+                <div className="flex gap-2 text-[10px] text-ivory/50">
+                  <span className="px-2 py-1 border border-ivory/15">Visa</span>
+                  <span className="px-2 py-1 border border-ivory/15">Mastercard</span>
+                  <span className="px-2 py-1 border border-ivory/15">Amex</span>
+                  <span className="px-2 py-1 border border-ivory/15">PayPal</span>
+                  <span className="px-2 py-1 border border-ivory/15">Apple Pay</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
