@@ -1,24 +1,47 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Heart, ShoppingBag, Trash2, ArrowLeft, Sparkles } from "lucide-react";
+import { Heart, ShoppingBag, Trash2, ArrowLeft, Sparkles, Eye } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LocalCartDrawer } from "@/components/cart/LocalCartDrawer";
 import { PageTransition, ScrollReveal, StaggerContainer, StaggerItem } from "@/components/animations/PageTransition";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { useLocalCartStore } from "@/stores/localCartStore";
+import { SimilarProducts } from "@/components/products/SimilarProducts";
+import { QuickViewModal } from "@/components/products/QuickViewModal";
 import { toast } from "sonner";
+import { useState } from "react";
 
-// Import images
+// Import jewellery images
 import productNecklace from "@/assets/product-necklace.jpg";
 import productEarrings from "@/assets/product-earrings.jpg";
 import productRing from "@/assets/product-ring.jpg";
 import productBangle from "@/assets/product-bangle.jpg";
-import productPearlEarrings from "@/assets/product-pearl-earrings.jpg";
-import productSilverRings from "@/assets/product-silver-rings.jpg";
+
+// Import eyewear images
+import eyewearProduct1 from "@/assets/eyewear-product-1.jpg";
+import eyewearProduct2 from "@/assets/eyewear-product-2.jpg";
+import eyewearProduct3 from "@/assets/eyewear-product-3.jpg";
+import eyewearProduct4 from "@/assets/eyewear-product-4.jpg";
+
 import { DemoProduct } from "@/data/demoProducts";
 
 const getProductImage = (product: DemoProduct): string => {
+  // Eyewear images
+  if (product.category === "eyewear") {
+    if (product.handle.includes("aviator") || product.handle.includes("monaco")) {
+      return eyewearProduct1;
+    }
+    if (product.handle.includes("cat-eye") || product.handle.includes("riviera")) {
+      return eyewearProduct3;
+    }
+    if (product.handle.includes("oversized") || product.handle.includes("capri")) {
+      return eyewearProduct4;
+    }
+    return eyewearProduct2;
+  }
+
+  // Jewellery images
   const images: Record<string, string> = {
     necklaces: productNecklace,
     earrings: productEarrings,
@@ -32,6 +55,7 @@ const getProductImage = (product: DemoProduct): string => {
 const Wishlist = () => {
   const { items, removeItem, clearWishlist } = useWishlistStore();
   const { addItem: addToCart } = useLocalCartStore();
+  const [quickViewProduct, setQuickViewProduct] = useState<DemoProduct | null>(null);
 
   const handleRemove = (id: string, title: string) => {
     removeItem(id);
@@ -57,6 +81,11 @@ const Wishlist = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <LocalCartDrawer />
+        <QuickViewModal 
+          product={quickViewProduct} 
+          isOpen={!!quickViewProduct} 
+          onClose={() => setQuickViewProduct(null)} 
+        />
 
         <main className="pt-32 pb-20">
           <div className="container-luxury">
@@ -88,13 +117,21 @@ const Wishlist = () => {
                   <p className="text-muted-foreground font-sans max-w-md mx-auto mb-8">
                     Save your favorite pieces to your wishlist and never miss out on the jewelry you love.
                   </p>
-                  <Link
-                    to="/jewellery"
-                    className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3 font-sans text-sm tracking-wide uppercase hover:opacity-90 transition-opacity"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Explore Jewelry
-                  </Link>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Link
+                      to="/jewellery"
+                      className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3 font-sans text-sm tracking-wide uppercase hover:opacity-90 transition-opacity"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      Explore Jewelry
+                    </Link>
+                    <Link
+                      to="/eyewear"
+                      className="inline-flex items-center justify-center gap-2 border border-primary text-primary px-8 py-3 font-sans text-sm tracking-wide uppercase hover:bg-primary hover:text-primary-foreground transition-colors"
+                    >
+                      Explore Eyewear
+                    </Link>
+                  </div>
                 </div>
               </ScrollReveal>
             ) : (
@@ -148,19 +185,33 @@ const Wishlist = () => {
                             )}
                           </div>
 
-                          {/* Remove Button */}
-                          <motion.button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleRemove(item.id, item.title);
-                            }}
-                            className="absolute top-3 right-3 w-9 h-9 bg-background/90 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </motion.button>
+                          {/* Action Buttons */}
+                          <div className="absolute top-3 right-3 flex flex-col gap-2">
+                            <motion.button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleRemove(item.id, item.title);
+                              }}
+                              className="w-9 h-9 bg-background/90 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </motion.button>
+                            <motion.button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setQuickViewProduct(item);
+                              }}
+                              className="w-9 h-9 bg-background/90 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </motion.button>
+                          </div>
                         </Link>
 
                         {/* Info */}
@@ -189,6 +240,22 @@ const Wishlist = () => {
                     </StaggerItem>
                   ))}
                 </StaggerContainer>
+
+                {/* Similar Products Recommendations */}
+                {items.length > 0 && (
+                  <motion.div
+                    className="mt-16 pt-12 border-t border-border"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <h2 className="font-serif text-2xl md:text-3xl text-center mb-8">You May Also Like</h2>
+                    <SimilarProducts 
+                      currentProduct={items[0]} 
+                      title="Based on your wishlist" 
+                    />
+                  </motion.div>
+                )}
               </>
             )}
           </div>
