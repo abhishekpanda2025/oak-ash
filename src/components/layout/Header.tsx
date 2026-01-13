@@ -121,20 +121,20 @@ export const Header = () => {
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
-            {/* Logo - O&A Text Only */}
+            {/* Logo - OAK & ASH Full Text */}
             <Link to="/" className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 flex items-center gap-2">
               <motion.div
                 className="flex items-center"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
               >
-                <h1 className="text-xl md:text-2xl font-serif font-normal tracking-wide leading-none">
+                <h1 className="text-lg md:text-xl font-serif font-normal tracking-wide leading-none">
                   <span className={`transition-colors duration-500 ${shouldUseDarkText ? "text-neutral-900" : "text-white"}`}>
-                    O
+                    OAK
                   </span>
-                  <span className="text-amber-500 mx-0.5">&amp;</span>
+                  <span className="text-amber-500 mx-1">&amp;</span>
                   <span className={`transition-colors duration-500 ${shouldUseDarkText ? "text-neutral-900" : "text-white"}`}>
-                    A
+                    ASH
                   </span>
                 </h1>
               </motion.div>
