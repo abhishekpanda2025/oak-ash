@@ -11,10 +11,20 @@ import { PromiseSection } from "@/components/home/PromiseSection";
 import { NewsletterPopup } from "@/components/home/NewsletterPopup";
 import { PageTransition } from "@/components/animations/PageTransition";
 import { LookbookGallery } from "@/components/lookbook/LookbookGallery";
-import { VirtualTryOn } from "@/components/tryon/VirtualTryOn";
-import { GSAPSection, TrailingCursor } from "@/components/animations/GSAPParallax";
+import { TrailingCursor } from "@/components/animations/GSAPParallax";
+import { SmoothStackingCard } from "@/components/animations/StackingCards";
 
 const Index = () => {
+  const sections = [
+    { key: "featured", component: <FeaturedProducts /> },
+    { key: "crafting", component: <CraftingVideoSection /> },
+    { key: "lookbook", component: <LookbookGallery /> },
+    { key: "craftsmanship", component: <CraftsmanshipSection /> },
+    { key: "collection", component: <CollectionShowcase /> },
+    { key: "testimonials", component: <Testimonials /> },
+    { key: "promise", component: <PromiseSection /> },
+  ];
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background">
@@ -22,38 +32,22 @@ const Index = () => {
         <LocalCartDrawer />
         <NewsletterPopup />
         <TrailingCursor />
-        <VirtualTryOn />
         
         <main>
           <HeroSection />
           
-          <GSAPSection index={1}>
-            <FeaturedProducts />
-          </GSAPSection>
-          
-          <GSAPSection index={2}>
-            <CraftingVideoSection />
-          </GSAPSection>
-          
-          <GSAPSection index={3}>
-            <LookbookGallery />
-          </GSAPSection>
-          
-          <GSAPSection index={4}>
-            <CraftsmanshipSection />
-          </GSAPSection>
-          
-          <GSAPSection index={5}>
-            <CollectionShowcase />
-          </GSAPSection>
-          
-          <GSAPSection index={6}>
-            <Testimonials />
-          </GSAPSection>
-          
-          <GSAPSection index={7}>
-            <PromiseSection />
-          </GSAPSection>
+          {/* Stacking Cards Animation Container */}
+          <div className="relative" style={{ perspective: "1200px" }}>
+            {sections.map((section, index) => (
+              <SmoothStackingCard 
+                key={section.key} 
+                index={index} 
+                totalCards={sections.length}
+              >
+                {section.component}
+              </SmoothStackingCard>
+            ))}
+          </div>
         </main>
         <Footer />
       </div>
