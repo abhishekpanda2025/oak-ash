@@ -23,6 +23,7 @@ import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Account from "./pages/Account";
+import Profile from "./pages/Profile";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
 
@@ -86,6 +87,7 @@ const AnimatedRoutes = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/eyewear" element={<Eyewear />} />
             <Route path="/faq" element={<About />} />

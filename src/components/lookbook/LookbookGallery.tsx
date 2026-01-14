@@ -1,5 +1,5 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useState } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
 import { Heart, ShoppingBag, X, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWishlistStore } from "@/stores/wishlistStore";
@@ -7,7 +7,10 @@ import { useLocalCartStore } from "@/stores/localCartStore";
 import { demoProducts, DemoProduct } from "@/data/demoProducts";
 import { toast } from "sonner";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(ScrollTrigger);
 
 // Import images
 import modelHero1 from "@/assets/model-hero-1.jpg";
@@ -72,101 +75,6 @@ const looks: Look[] = [
   },
 ];
 
-const LookCard = ({ look, index, onOpen }: { look: Look; index: number; onOpen: () => void }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const { addItem: addToWishlist, isInWishlist, removeItem } = useWishlistStore();
-  
-  const { scrollYProgress } = useScroll({
-    target: cardRef,
-    offset: ["start end", "end start"]
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 0.9]);
-  const rotateY = useTransform(scrollYProgress, [0, 0.5, 1], [5, 0, -5]);
-
-  const handleWishlist = (product: DemoProduct) => {
-    if (isInWishlist(product.id)) {
-      removeItem(product.id);
-      toast.success("Removed from wishlist");
-    } else {
-      addToWishlist(product);
-      toast.success("Added to wishlist");
-    }
-  };
-
-  return (
-    <motion.div
-      ref={cardRef}
-      style={{ y, scale, rotateY, transformPerspective: 1000 }}
-      className="relative group cursor-pointer"
-      onClick={onOpen}
-    >
-      <div className="relative aspect-[3/4] overflow-hidden bg-neutral-100">
-        <motion.img
-          src={look.image}
-          alt={look.title}
-          className="w-full h-full object-cover"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.6 }}
-        />
-        
-        {/* Overlay */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500"
-        />
-        
-        {/* Content */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <p className="text-xs uppercase tracking-widest text-amber-400 mb-2">Look {index + 1}</p>
-            <h3 className="font-serif text-2xl mb-2">{look.title}</h3>
-            <p className="text-sm text-white/70 line-clamp-2 mb-4">{look.description}</p>
-            
-            {/* Product Pills */}
-            <div className="flex flex-wrap gap-2">
-              {look.products.slice(0, 3).map((product) => (
-                <motion.button
-                  key={product.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleWishlist(product);
-                  }}
-                  className={`flex items-center gap-2 px-3 py-1.5 text-xs backdrop-blur-sm transition-colors ${
-                    isInWishlist(product.id)
-                      ? "bg-amber-500 text-black"
-                      : "bg-white/20 hover:bg-white/30"
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Heart className={`w-3 h-3 ${isInWishlist(product.id) ? "fill-current" : ""}`} />
-                  <span className="truncate max-w-[100px]">{product.title.split(" ").slice(0, 2).join(" ")}</span>
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-        
-        {/* View Look CTA */}
-        <motion.div
-          className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
-          initial={{ scale: 0 }}
-          whileHover={{ scale: 1.1 }}
-        >
-          <div className="w-12 h-12 bg-amber-500 flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-black" />
-          </div>
-        </motion.div>
-      </div>
-    </motion.div>
-  );
-};
-
 // Look Detail Modal
 const LookDetailModal = ({ look, isOpen, onClose }: { look: Look | null; isOpen: boolean; onClose: () => void }) => {
   const { addItem: addToWishlist, isInWishlist, removeItem } = useWishlistStore();
@@ -212,7 +120,6 @@ const LookDetailModal = ({ look, isOpen, onClose }: { look: Look | null; isOpen:
         </button>
 
         <div className="grid md:grid-cols-2 h-full">
-          {/* Image */}
           <div className="relative aspect-[3/4] md:aspect-auto">
             <img
               src={look.image}
@@ -221,7 +128,6 @@ const LookDetailModal = ({ look, isOpen, onClose }: { look: Look | null; isOpen:
             />
           </div>
 
-          {/* Products */}
           <div className="p-8 overflow-y-auto max-h-[50vh] md:max-h-full">
             <p className="text-xs uppercase tracking-widest text-amber-600 mb-2">Complete the Look</p>
             <h2 className="font-serif text-3xl mb-2">{look.title}</h2>
@@ -282,12 +188,137 @@ const LookDetailModal = ({ look, isOpen, onClose }: { look: Look | null; isOpen:
   );
 };
 
+// GSAP Stacked Card Component
+const StackedLookCard = ({ look, index, totalCards }: { look: Look; index: number; totalCards: number }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const { addItem: addToWishlist, isInWishlist, removeItem } = useWishlistStore();
+
+  const handleWishlist = (e: React.MouseEvent, product: DemoProduct) => {
+    e.stopPropagation();
+    if (isInWishlist(product.id)) {
+      removeItem(product.id);
+      toast.success("Removed from wishlist");
+    } else {
+      addToWishlist(product);
+      toast.success("Added to wishlist");
+    }
+  };
+
+  return (
+    <div
+      ref={cardRef}
+      className="stacked-card absolute inset-0 w-full h-full"
+      style={{
+        zIndex: totalCards - index,
+      }}
+    >
+      <div className="relative w-full h-full overflow-hidden shadow-2xl bg-white">
+        {/* Image */}
+        <img
+          src={look.image}
+          alt={look.title}
+          className="w-full h-full object-cover"
+        />
+        
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        
+        {/* Content */}
+        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white">
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <p className="text-xs uppercase tracking-widest text-amber-400 mb-3">Look {index + 1}</p>
+            <h3 className="font-serif text-3xl md:text-4xl mb-3">{look.title}</h3>
+            <p className="text-white/70 mb-6 max-w-md">{look.description}</p>
+            
+            {/* Product Pills */}
+            <div className="flex flex-wrap gap-3">
+              {look.products.slice(0, 3).map((product) => (
+                <motion.button
+                  key={product.id}
+                  onClick={(e) => handleWishlist(e, product)}
+                  className={`flex items-center gap-2 px-4 py-2 text-sm backdrop-blur-sm transition-colors ${
+                    isInWishlist(product.id)
+                      ? "bg-amber-500 text-black"
+                      : "bg-white/20 hover:bg-white/30"
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? "fill-current" : ""}`} />
+                  <span className="truncate max-w-[150px]">{product.title.split(" ").slice(0, 3).join(" ")}</span>
+                  <span className="text-amber-400">${product.price}</span>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+        
+        {/* Card Number */}
+        <div className="absolute top-6 right-6 w-12 h-12 bg-amber-500 flex items-center justify-center">
+          <span className="font-serif text-xl text-black">{index + 1}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const LookbookGallery = () => {
   const [selectedLook, setSelectedLook] = useState<Look | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const stackContainerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    if (!stackContainerRef.current) return;
+
+    const cards = gsap.utils.toArray<HTMLElement>(".stacked-card");
+    
+    cards.forEach((card, i) => {
+      if (i === 0) return; // First card stays in place
+      
+      gsap.set(card, {
+        y: i * 30,
+        scale: 1 - i * 0.05,
+        opacity: 1 - i * 0.1,
+      });
+
+      ScrollTrigger.create({
+        trigger: stackContainerRef.current,
+        start: `top+=${i * 150} top`,
+        end: `top+=${(i + 1) * 150} top`,
+        scrub: true,
+        onUpdate: (self) => {
+          const progress = self.progress;
+          
+          // Move current card up and out
+          gsap.to(cards[i - 1], {
+            y: -100 * progress,
+            scale: 1 + 0.1 * progress,
+            opacity: 1 - progress,
+            duration: 0,
+          });
+          
+          // Bring next card forward
+          gsap.to(card, {
+            y: (1 - progress) * 30,
+            scale: 1 - (1 - progress) * 0.05,
+            opacity: 1 - (1 - progress) * 0.1,
+            duration: 0,
+          });
+        },
+      });
+    });
+
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, { scope: stackContainerRef });
 
   return (
-    <section className="py-24 bg-neutral-50">
+    <section className="py-24 bg-neutral-900">
       <div className="container-luxury">
         <motion.div
           className="text-center mb-16"
@@ -295,26 +326,44 @@ export const LookbookGallery = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <p className="text-xs uppercase tracking-widest text-amber-600 mb-4">Style Inspiration</p>
-          <h2 className="font-serif text-4xl md:text-5xl mb-4">The Lookbook</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-amber-400 mb-4">Style Inspiration</p>
+          <h2 className="font-serif text-4xl md:text-5xl mb-4 text-white">The Lookbook</h2>
+          <p className="text-neutral-400 max-w-xl mx-auto">
             Browse complete outfits curated by our stylists. Save your favorite looks to your wishlist.
           </p>
         </motion.div>
 
+        {/* GSAP Stacked Cards */}
         <div 
-          ref={containerRef}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+          ref={stackContainerRef}
+          className="relative h-[600px] md:h-[700px] w-full max-w-4xl mx-auto"
+          style={{ perspective: "1000px" }}
         >
           {looks.map((look, index) => (
-            <LookCard
+            <StackedLookCard
               key={look.id}
               look={look}
               index={index}
-              onOpen={() => setSelectedLook(look)}
+              totalCards={looks.length}
             />
           ))}
         </div>
+
+        {/* View All Link */}
+        <motion.div
+          className="text-center mt-16"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+        >
+          <Link
+            to="/jewellery"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-amber-500 text-black font-medium hover:bg-amber-400 transition-colors"
+          >
+            <Sparkles className="w-5 h-5" />
+            View All Looks
+          </Link>
+        </motion.div>
       </div>
 
       <LookDetailModal
