@@ -667,14 +667,38 @@ export const VirtualTryOn = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showSparkles, setShowSparkles] = useState(false);
   const [showProduct, setShowProduct] = useState(true);
-  const [showShopTheLook, setShowShopTheLook] = useState(false);
-  const [shopTheLookItems, setShopTheLookItems] = useState<ShopTheLookItem[]>([]);
+  const [isButtonVisible, setIsButtonVisible] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { addItem } = useLocalCartStore();
+
+  // Hide button while scrolling, show when stopped
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsButtonVisible(false);
+      
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsButtonVisible(true);
+      }, 300);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const getProductsForMode = () => {
     switch (mode) {
@@ -791,30 +815,6 @@ export const VirtualTryOn = () => {
       }
     }
   }, [cameraFacing, activeFilter]);
-
-  const addToShopTheLook = useCallback(() => {
-    const existingItem = shopTheLookItems.find(item => item.product.id === selectedProduct.id);
-    if (!existingItem) {
-      const productImage = images[selectedProduct.id] || (mode === "eyewear" ? eyewearProduct1 : productNecklace);
-      setShopTheLookItems(prev => [...prev, { product: selectedProduct, image: productImage }]);
-      toast.success(`${selectedProduct.title} added to your look!`);
-    } else {
-      toast.info("This item is already in your look");
-    }
-  }, [selectedProduct, shopTheLookItems, images, mode]);
-
-  const removeFromShopTheLook = useCallback((productId: string) => {
-    setShopTheLookItems(prev => prev.filter(item => item.product.id !== productId));
-  }, []);
-
-  const addAllToCart = useCallback(() => {
-    shopTheLookItems.forEach(item => {
-      addItem(item.product, 1);
-    });
-    toast.success(`${shopTheLookItems.length} items added to cart!`);
-    setShopTheLookItems([]);
-    setShowShopTheLook(false);
-  }, [shopTheLookItems, addItem]);
 
   const downloadPhoto = useCallback(() => {
     if (capturedImage) {
@@ -946,20 +946,25 @@ export const VirtualTryOn = () => {
 
   return (
     <>
-      {/* Trigger Button */}
-      <motion.button
-        onClick={handleOpen}
-        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-2 md:gap-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black px-4 py-3 md:px-6 md:py-4 shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-shadow rounded-full"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 2 }}
-      >
-        <Camera className="w-5 h-5" />
-        <span className="font-medium text-xs md:text-sm uppercase tracking-wide hidden sm:inline">Virtual Try-On</span>
-        <Sparkles className="w-4 h-4 hidden md:block" />
-      </motion.button>
+      {/* Trigger Button - Collapsible on scroll */}
+      <AnimatePresence>
+        {isButtonVisible && (
+          <motion.button
+            onClick={handleOpen}
+            className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-2 md:gap-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black px-4 py-3 md:px-6 md:py-4 shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-shadow rounded-full"
+            initial={{ y: 100, opacity: 0, scale: 0.8 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 50, opacity: 0, scale: 0.8 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+          >
+            <Camera className="w-5 h-5" />
+            <span className="font-medium text-xs md:text-sm uppercase tracking-wide hidden sm:inline">Virtual Try-On</span>
+            <Sparkles className="w-4 h-4 hidden md:block" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Modal Dialog */}
       <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -980,29 +985,6 @@ export const VirtualTryOn = () => {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 md:gap-2">
-                {/* Shop the Look Toggle */}
-                <button
-                  onClick={() => setShowShopTheLook(!showShopTheLook)}
-                  className={`w-9 h-9 md:w-10 md:h-10 backdrop-blur-sm flex items-center justify-center transition-colors rounded-full relative ${
-                    showShopTheLook ? 'bg-amber-500 text-black' : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                  title="Shop the Look"
-                >
-                  <ShoppingBag className="w-4 h-4 md:w-5 md:h-5" />
-                  {shopTheLookItems.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[10px] rounded-full flex items-center justify-center">
-                      {shopTheLookItems.length}
-                    </span>
-                  )}
-                </button>
-                {/* Add to Look Button */}
-                <button
-                  onClick={addToShopTheLook}
-                  className="w-9 h-9 md:w-10 md:h-10 bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-amber-500 hover:text-black transition-colors rounded-full"
-                  title="Add to your look"
-                >
-                  <Heart className="w-4 h-4 md:w-5 md:h-5" />
-                </button>
                 {/* Show/Hide Product Toggle */}
                 <button
                   onClick={() => setShowProduct(!showProduct)}
@@ -1083,18 +1065,6 @@ export const VirtualTryOn = () => {
                 <span className="hidden sm:inline">Rings</span>
               </button>
             </div>
-
-            {/* Shop the Look Panel */}
-            <AnimatePresence>
-              {showShopTheLook && (
-                <ShopTheLookPanel
-                  items={shopTheLookItems}
-                  onRemove={removeFromShopTheLook}
-                  onAddAllToCart={addAllToCart}
-                  onClose={() => setShowShopTheLook(false)}
-                />
-              )}
-            </AnimatePresence>
 
             {/* Beauty Filters Panel */}
             <AnimatePresence>
@@ -1345,12 +1315,6 @@ export const VirtualTryOn = () => {
                     className="w-11 h-11 md:w-14 md:h-14 bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors rounded-full"
                   >
                     <Share2 className="w-5 h-5 md:w-6 md:h-6" />
-                  </button>
-                  <button
-                    onClick={addToShopTheLook}
-                    className="w-11 h-11 md:w-14 md:h-14 bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-rose-500 hover:text-white transition-colors rounded-full"
-                  >
-                    <Heart className="w-5 h-5 md:w-6 md:h-6" />
                   </button>
                 </>
               )}
