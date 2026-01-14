@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { Gem, Truck, RefreshCw, Shield, ShoppingBag, Package, MapPin, Heart, Check, Star } from "lucide-react";
+import { Gem, RefreshCw, Shield, ShoppingBag, Package, Heart, Check, Star, Sparkles, Gift } from "lucide-react";
 
 // Animated journey stages
 const journeyStages = [
@@ -23,7 +23,7 @@ const journeyStages = [
     color: "from-purple-400 to-purple-600",
   },
   {
-    icon: Truck,
+    icon: Gift,
     title: "On Its Way",
     description: "Express delivery to you",
     color: "from-blue-400 to-blue-600",
@@ -44,7 +44,7 @@ const promises = [
     delay: 0,
   },
   {
-    icon: Truck,
+    icon: Gift,
     title: "Free Shipping",
     description: "Complimentary shipping on all orders over $150 with secure packaging.",
     delay: 0.1,
@@ -63,8 +63,8 @@ const promises = [
   },
 ];
 
-// Animated delivery truck
-const DeliveryTruck = ({ progress }: { progress: number }) => {
+// Animated Scooty Delivery
+const DeliveryScooty = ({ progress }: { progress: number }) => {
   return (
     <motion.div
       className="absolute bottom-0 left-0"
@@ -72,42 +72,215 @@ const DeliveryTruck = ({ progress }: { progress: number }) => {
     >
       <motion.div
         className="relative"
-        animate={{ y: [0, -3, 0] }}
-        transition={{ duration: 0.5, repeat: Infinity }}
+        animate={{ y: [0, -2, 0, -1, 0] }}
+        transition={{ duration: 0.4, repeat: Infinity }}
       >
-        {/* Truck body */}
-        <div className="w-16 h-10 bg-gradient-to-r from-amber-500 to-amber-600 rounded-sm relative">
-          {/* Window */}
-          <div className="absolute top-1 right-1 w-4 h-4 bg-neutral-900/50 rounded-sm" />
-          {/* OAK & ASH text */}
-          <span className="absolute top-2 left-1 text-[6px] font-bold text-neutral-900">OAK</span>
-        </div>
-        {/* Wheels */}
-        <motion.div 
-          className="absolute -bottom-2 left-2 w-4 h-4 bg-neutral-800 rounded-full border-2 border-neutral-600"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
-        />
-        <motion.div 
-          className="absolute -bottom-2 right-2 w-4 h-4 bg-neutral-800 rounded-full border-2 border-neutral-600"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
-        />
+        {/* Scooty body */}
+        <svg width="60" height="40" viewBox="0 0 60 40" className="drop-shadow-lg">
+          {/* Rear wheel */}
+          <motion.circle
+            cx="12"
+            cy="32"
+            r="7"
+            fill="#333"
+            stroke="#555"
+            strokeWidth="2"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 0.3, repeat: Infinity, ease: "linear" }}
+          />
+          <circle cx="12" cy="32" r="3" fill="#888" />
+          
+          {/* Front wheel */}
+          <motion.circle
+            cx="48"
+            cy="32"
+            r="7"
+            fill="#333"
+            stroke="#555"
+            strokeWidth="2"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 0.3, repeat: Infinity, ease: "linear" }}
+          />
+          <circle cx="48" cy="32" r="3" fill="#888" />
+          
+          {/* Body */}
+          <path
+            d="M8 25 Q 15 10, 30 12 L 45 12 Q 52 12, 50 25 L 48 28 L 12 28 Z"
+            fill="url(#scootyGradient)"
+            stroke="#D4AF37"
+            strokeWidth="1"
+          />
+          
+          {/* Seat */}
+          <ellipse cx="25" cy="12" rx="10" ry="3" fill="#222" />
+          
+          {/* Handlebar */}
+          <line x1="48" y1="12" x2="52" y2="5" stroke="#333" strokeWidth="2" strokeLinecap="round" />
+          <line x1="50" y1="4" x2="56" y2="4" stroke="#333" strokeWidth="3" strokeLinecap="round" />
+          
+          {/* Delivery Box */}
+          <rect x="12" y="4" width="16" height="10" fill="#D4AF37" rx="1" />
+          <text x="14" y="11" fontSize="5" fontWeight="bold" fill="#000">OAK</text>
+          
+          {/* Headlight */}
+          <motion.circle
+            cx="54"
+            cy="20"
+            r="2"
+            fill="#FFE066"
+            animate={{ opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 0.5, repeat: Infinity }}
+          />
+          
+          <defs>
+            <linearGradient id="scootyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#D4AF37" />
+              <stop offset="100%" stopColor="#B8860B" />
+            </linearGradient>
+          </defs>
+        </svg>
+        
+        {/* Rider silhouette */}
+        <motion.div
+          className="absolute -top-4 left-4"
+          animate={{ y: [0, -1, 0] }}
+          transition={{ duration: 0.3, repeat: Infinity }}
+        >
+          <svg width="24" height="28" viewBox="0 0 24 28">
+            {/* Head with helmet */}
+            <ellipse cx="12" cy="6" rx="6" ry="5" fill="#333" />
+            <ellipse cx="12" cy="5" rx="5" ry="4" fill="#444" />
+            
+            {/* Body */}
+            <path
+              d="M8 10 L6 24 L18 24 L16 10 Z"
+              fill="#222"
+            />
+            
+            {/* Arms */}
+            <path
+              d="M16 12 Q 22 14, 20 18"
+              stroke="#222"
+              strokeWidth="3"
+              fill="none"
+              strokeLinecap="round"
+            />
+          </svg>
+        </motion.div>
+        
         {/* Speed lines */}
-        {[...Array(3)].map((_, i) => (
+        {[...Array(4)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute h-px bg-gradient-to-r from-amber-500/60 to-transparent"
             style={{
-              left: -20 - i * 10,
-              top: 3 + i * 3,
-              width: 15 - i * 3,
+              left: -25 - i * 8,
+              top: 20 + i * 5,
+              width: 20 - i * 3,
             }}
-            animate={{ opacity: [0.3, 0.8, 0.3], x: [-5, 0, -5] }}
-            transition={{ duration: 0.3, repeat: Infinity, delay: i * 0.1 }}
+            animate={{ opacity: [0.2, 0.8, 0.2], x: [-3, 0, -3] }}
+            transition={{ duration: 0.25, repeat: Infinity, delay: i * 0.05 }}
+          />
+        ))}
+        
+        {/* Dust particles */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={`dust-${i}`}
+            className="absolute rounded-full bg-neutral-400"
+            style={{
+              left: -10 - i * 5,
+              top: 30 + (i % 2) * 5,
+              width: 3 - (i % 3),
+              height: 3 - (i % 3),
+            }}
+            animate={{ 
+              opacity: [0, 0.5, 0], 
+              x: [-5, -15],
+              y: [0, -5 + Math.random() * 10]
+            }}
+            transition={{ 
+              duration: 0.6, 
+              repeat: Infinity, 
+              delay: i * 0.1,
+              repeatDelay: 0.2
+            }}
           />
         ))}
       </motion.div>
+    </motion.div>
+  );
+};
+
+// Shop Building Animation
+const ShopBuilding = ({ isActive }: { isActive: boolean }) => {
+  return (
+    <motion.div
+      className="absolute left-0 -top-8"
+      animate={isActive ? { scale: [1, 1.05, 1] } : {}}
+      transition={{ duration: 0.5 }}
+    >
+      <svg width="40" height="50" viewBox="0 0 40 50">
+        {/* Building */}
+        <rect x="5" y="15" width="30" height="35" fill="#8B7355" />
+        <rect x="8" y="20" width="10" height="12" fill="#D4AF37" />
+        <rect x="22" y="20" width="10" height="12" fill="#D4AF37" />
+        <rect x="15" y="35" width="10" height="15" fill="#654321" />
+        
+        {/* Roof */}
+        <polygon points="0,15 20,0 40,15" fill="#D4AF37" />
+        
+        {/* Sign */}
+        <rect x="10" y="5" width="20" height="8" fill="#FFF8DC" />
+        <text x="12" y="11" fontSize="5" fill="#333" fontWeight="bold">OAK</text>
+        
+        {/* Door light */}
+        <motion.rect
+          x="16" y="36"
+          width="8" height="2"
+          fill="#FFE066"
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+      </svg>
+    </motion.div>
+  );
+};
+
+// Customer House Animation
+const CustomerHouse = ({ isActive }: { isActive: boolean }) => {
+  return (
+    <motion.div
+      className="absolute right-0 -top-8"
+      animate={isActive ? { scale: [1, 1.1, 1] } : {}}
+      transition={{ duration: 0.5 }}
+    >
+      <svg width="40" height="50" viewBox="0 0 40 50">
+        {/* House */}
+        <rect x="5" y="20" width="30" height="30" fill="#E8D5B7" />
+        <rect x="10" y="25" width="8" height="8" fill="#87CEEB" />
+        <rect x="22" y="25" width="8" height="8" fill="#87CEEB" />
+        <rect x="15" y="38" width="10" height="12" fill="#8B4513" />
+        
+        {/* Roof */}
+        <polygon points="0,20 20,5 40,20" fill="#DC143C" />
+        
+        {/* Chimney */}
+        <rect x="28" y="8" width="6" height="10" fill="#666" />
+        
+        {/* Heart on door */}
+        {isActive && (
+          <motion.text
+            x="18" y="46"
+            fontSize="8"
+            initial={{ scale: 0 }}
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ duration: 0.5, repeat: Infinity }}
+          >
+            ❤️
+          </motion.text>
+        )}
+      </svg>
     </motion.div>
   );
 };
@@ -116,85 +289,114 @@ const DeliveryTruck = ({ progress }: { progress: number }) => {
 const HappyCustomer = ({ isVisible }: { isVisible: boolean }) => {
   return (
     <motion.div
-      className="relative w-24 h-24 mx-auto"
+      className="relative w-28 h-28 mx-auto"
       initial={{ scale: 0, opacity: 0 }}
       animate={isVisible ? { scale: 1, opacity: 1 } : {}}
       transition={{ duration: 0.5, type: "spring" }}
     >
       {/* Face */}
-      <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-200 to-amber-300 relative overflow-hidden">
+      <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-200 to-amber-300 relative overflow-hidden shadow-lg">
         {/* Eyes */}
         <motion.div
-          className="absolute top-8 left-5 w-3 h-3 bg-neutral-800 rounded-full"
+          className="absolute top-9 left-6 w-3.5 h-3.5 bg-neutral-800 rounded-full"
           animate={{ scaleY: [1, 0.2, 1] }}
           transition={{ duration: 3, repeat: Infinity, delay: 2 }}
         />
         <motion.div
-          className="absolute top-8 right-5 w-3 h-3 bg-neutral-800 rounded-full"
+          className="absolute top-9 right-6 w-3.5 h-3.5 bg-neutral-800 rounded-full"
           animate={{ scaleY: [1, 0.2, 1] }}
           transition={{ duration: 3, repeat: Infinity, delay: 2 }}
         />
+        
+        {/* Sparkle in eyes */}
+        <div className="absolute top-8 left-7 w-1.5 h-1.5 bg-white rounded-full" />
+        <div className="absolute top-8 right-7 w-1.5 h-1.5 bg-white rounded-full" />
+        
         {/* Smile */}
         <motion.div
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 w-10 h-5 border-b-4 border-neutral-800 rounded-b-full"
+          className="absolute bottom-7 left-1/2 -translate-x-1/2 w-12 h-6 border-b-4 border-neutral-800 rounded-b-full"
           initial={{ scaleX: 0.5 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         />
+        
         {/* Blush */}
-        <div className="absolute top-10 left-1 w-4 h-2 bg-rose-300/50 rounded-full" />
-        <div className="absolute top-10 right-1 w-4 h-2 bg-rose-300/50 rounded-full" />
+        <div className="absolute top-12 left-2 w-5 h-2.5 bg-rose-300/60 rounded-full blur-[1px]" />
+        <div className="absolute top-12 right-2 w-5 h-2.5 bg-rose-300/60 rounded-full blur-[1px]" />
+        
+        {/* Jewelry on customer */}
+        <motion.div
+          className="absolute top-6 left-1/2 -translate-x-1/2"
+          animate={{ rotate: [0, 5, 0, -5, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <Sparkles className="w-6 h-6 text-amber-600" />
+        </motion.div>
       </div>
       
       {/* Hearts floating up */}
-      {isVisible && [...Array(5)].map((_, i) => (
+      {isVisible && [...Array(6)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute text-rose-500"
           initial={{ 
-            x: 10 + Math.random() * 10, 
+            x: 14 + Math.random() * 10, 
             y: 0, 
             opacity: 0,
             scale: 0.5 
           }}
           animate={{ 
-            y: -60 - Math.random() * 30, 
+            y: -70 - Math.random() * 40, 
             opacity: [0, 1, 0],
-            scale: [0.5, 1, 0.5],
-            x: 10 + (Math.random() - 0.5) * 40
+            scale: [0.5, 1.2, 0.5],
+            x: 14 + (Math.random() - 0.5) * 50
           }}
           transition={{ 
-            duration: 2, 
-            delay: 0.5 + i * 0.3,
+            duration: 2.5, 
+            delay: 0.5 + i * 0.25,
             repeat: Infinity,
-            repeatDelay: 1
+            repeatDelay: 0.8
           }}
         >
-          <Heart className="w-4 h-4 fill-current" />
+          <Heart className="w-5 h-5 fill-current" />
         </motion.div>
       ))}
       
       {/* Stars around */}
-      {isVisible && [...Array(4)].map((_, i) => (
+      {isVisible && [...Array(5)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute text-amber-400"
           style={{
-            left: `${20 + i * 20}%`,
-            top: -10 + (i % 2) * 10,
+            left: `${15 + i * 18}%`,
+            top: -15 + (i % 2) * 10,
           }}
           initial={{ scale: 0, rotate: 0 }}
-          animate={{ scale: [0, 1, 0], rotate: 180 }}
+          animate={{ scale: [0, 1, 0], rotate: 360 }}
           transition={{ 
             duration: 1.5, 
-            delay: 1 + i * 0.2,
+            delay: 1 + i * 0.15,
             repeat: Infinity,
-            repeatDelay: 2
+            repeatDelay: 1.5
           }}
         >
-          <Star className="w-3 h-3 fill-current" />
+          <Star className="w-4 h-4 fill-current" />
         </motion.div>
       ))}
+      
+      {/* Gift box appearing */}
+      {isVisible && (
+        <motion.div
+          className="absolute -bottom-2 -right-2"
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: 0.8, type: "spring" }}
+        >
+          <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-sm flex items-center justify-center shadow-lg">
+            <Gift className="w-5 h-5 text-white" />
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   );
 };
@@ -358,43 +560,62 @@ export const PromiseSection = () => {
           transition={{ duration: 0.6 }}
         >
           <p className="text-xs tracking-luxury uppercase text-amber-600 mb-4 font-sans">
-            Our Promise
+            Your Shopping Journey
           </p>
           <h2 className="font-serif text-3xl md:text-4xl font-medium text-neutral-800">
-            The OAK &amp; ASH Experience
+            Our Promise
           </h2>
         </motion.div>
 
         {/* Animated Journey Section */}
         <motion.div
-          className="mb-20 bg-white p-8 md:p-12 shadow-lg"
+          className="mb-20 bg-white p-8 md:p-12 shadow-lg rounded-xl"
           initial={{ opacity: 0, y: 50 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <h3 className="text-center font-serif text-xl md:text-2xl text-neutral-800 mb-10">
-            Your Shopping Journey
+          <h3 className="text-center font-serif text-xl md:text-2xl text-neutral-800 mb-12">
+            From OAK & ASH Shop to Your Doorstep
           </h3>
           
-          {/* Journey timeline */}
+          {/* Journey timeline with Scooty */}
           <div className="relative">
+            {/* Shop and House illustrations */}
+            <div className="absolute top-0 left-4 right-4 flex justify-between pointer-events-none">
+              <ShopBuilding isActive={currentStage === 0} />
+              <CustomerHouse isActive={currentStage >= journeyStages.length - 1} />
+            </div>
+            
             {/* Progress track */}
-            <div className="absolute top-10 left-0 right-0 h-1 bg-neutral-200 rounded-full overflow-hidden">
+            <div className="absolute top-16 left-12 right-12 h-2 bg-neutral-200 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-amber-400 via-green-400 via-purple-400 via-blue-400 to-rose-400"
+                className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${(currentStage / (journeyStages.length - 1)) * 100}%` }}
-                transition={{ duration: 0.8 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
               />
             </div>
             
-            {/* Animated truck on the track */}
-            <div className="absolute top-5 left-0 right-16 h-8">
-              <DeliveryTruck progress={currentStage / (journeyStages.length - 1)} />
+            {/* Road markings */}
+            <div className="absolute top-[68px] left-12 right-12 flex justify-between px-4">
+              {[...Array(10)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="w-4 h-1 bg-white/80 rounded"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.6 }}
+                  transition={{ delay: i * 0.1 }}
+                />
+              ))}
+            </div>
+            
+            {/* Animated scooty on the track */}
+            <div className="absolute top-8 left-12 right-20 h-12">
+              <DeliveryScooty progress={currentStage / (journeyStages.length - 1)} />
             </div>
             
             {/* Journey stages */}
-            <div className="flex justify-between relative z-10 pt-4">
+            <div className="flex justify-between relative z-10 pt-24">
               {journeyStages.map((stage, index) => {
                 const isActive = index <= currentStage;
                 const isCurrent = index === currentStage;
@@ -467,12 +688,20 @@ export const PromiseSection = () => {
           >
             <HappyCustomer isVisible={journeyComplete} />
             <motion.p
-              className="text-center mt-4 font-serif text-lg text-neutral-800"
+              className="text-center mt-6 font-serif text-lg text-neutral-800"
               initial={{ opacity: 0, y: 20 }}
               animate={journeyComplete ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.5 }}
             >
-              Another Happy Customer! 💎
+              Another Happy Customer! 💎✨
+            </motion.p>
+            <motion.p
+              className="text-center text-sm text-neutral-600 mt-2"
+              initial={{ opacity: 0 }}
+              animate={journeyComplete ? { opacity: 1 } : {}}
+              transition={{ delay: 0.8 }}
+            >
+              Thank you for shopping with OAK & ASH
             </motion.p>
           </motion.div>
         </motion.div>
