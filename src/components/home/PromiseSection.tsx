@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring } from "framer-motion";
+import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { Gem, RefreshCw, Shield, ShoppingBag, Package, Heart, Check, Star, Sparkles, Gift, Truck } from "lucide-react";
 
@@ -488,13 +488,6 @@ export const PromiseSection = () => {
   const [currentStage, setCurrentStage] = useState(0);
   const [journeyComplete, setJourneyComplete] = useState(false);
   
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-  
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
-  
   useEffect(() => {
     if (!isInView) return;
     
@@ -514,10 +507,8 @@ export const PromiseSection = () => {
 
   return (
     <section ref={ref} className="relative section-padding bg-neutral-100 overflow-hidden">
-      <motion.div 
-        className="absolute inset-0 opacity-5"
-        style={{ y }}
-      >
+      {/* Static background pattern - no parallax */}
+      <div className="absolute inset-0 opacity-5">
         <div 
           className="w-full h-full"
           style={{
@@ -525,7 +516,7 @@ export const PromiseSection = () => {
             backgroundSize: "40px 40px",
           }}
         />
-      </motion.div>
+      </div>
 
       <div className="container-luxury relative z-10">
         <motion.div

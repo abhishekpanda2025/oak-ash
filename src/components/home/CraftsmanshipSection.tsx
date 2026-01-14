@@ -1,4 +1,4 @@
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useRef, useState } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import craftsmanshipImage from "@/assets/craftsmanship.jpg";
@@ -13,14 +13,6 @@ export const CraftsmanshipSection = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(false);
-  
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"]
-  });
-  
-  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -41,12 +33,9 @@ export const CraftsmanshipSection = () => {
   };
 
   return (
-    <section ref={ref} className="relative py-32 md:py-40 overflow-hidden">
-      {/* Background with parallax */}
-      <motion.div 
-        className="absolute inset-0"
-        style={{ y: bgY }}
-      >
+    <section ref={ref} className="relative py-20 md:py-32 overflow-hidden">
+      {/* Static Background - no parallax to prevent shaking */}
+      <div className="absolute inset-0">
         <div className="absolute inset-0 bg-neutral-900" />
         {/* Subtle pattern overlay */}
         <div className="absolute inset-0 opacity-5" 
@@ -54,7 +43,7 @@ export const CraftsmanshipSection = () => {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C5A45C' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` 
           }}
         />
-      </motion.div>
+      </div>
 
       <div className="container-luxury relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
