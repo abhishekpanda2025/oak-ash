@@ -10,6 +10,7 @@ import { Testimonials } from "@/components/home/Testimonials";
 import { PromiseSection } from "@/components/home/PromiseSection";
 import { NewsletterPopup } from "@/components/home/NewsletterPopup";
 import { PageTransition } from "@/components/animations/PageTransition";
+import { PageFlipSection } from "@/components/animations/SectionTransition";
 
 const Index = () => {
   return (
@@ -20,12 +21,30 @@ const Index = () => {
         <NewsletterPopup />
         <main>
           <HeroSection />
-          <FeaturedProducts />
-          <CraftingVideoSection />
-          <CraftsmanshipSection />
-          <CollectionShowcase />
-          <Testimonials />
-          <PromiseSection />
+          
+          <PageFlipSection index={1}>
+            <FeaturedProducts />
+          </PageFlipSection>
+          
+          <PageFlipSection index={2}>
+            <CraftingVideoSection />
+          </PageFlipSection>
+          
+          <PageFlipSection index={3}>
+            <CraftsmanshipSection />
+          </PageFlipSection>
+          
+          <PageFlipSection index={4}>
+            <CollectionShowcase />
+          </PageFlipSection>
+          
+          <PageFlipSection index={5}>
+            <Testimonials />
+          </PageFlipSection>
+          
+          <PageFlipSection index={6}>
+            <PromiseSection />
+          </PageFlipSection>
         </main>
         <Footer />
       </div>

@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useRef, useEffect, useState, useMemo } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShoppingBag, Eye, X, Volume2, VolumeX } from "lucide-react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
 
@@ -10,6 +10,21 @@ import modelHero2 from "@/assets/model-hero-2.jpg";
 import modelHero3 from "@/assets/model-hero-3.jpg";
 import modelHero4 from "@/assets/model-hero-4.jpg";
 import modelHero5 from "@/assets/model-hero-5.jpg";
+import modelHero6 from "@/assets/model-hero-6.jpg";
+import modelHero7 from "@/assets/model-hero-7.jpg";
+import modelHero8 from "@/assets/model-hero-8.jpg";
+import runwayVideo from "@/assets/runway-background.mp4";
+
+// Shop the look hotspot type
+interface Hotspot {
+  id: string;
+  x: string;
+  y: string;
+  type: "jewelry" | "eyewear";
+  productName: string;
+  price: string;
+  link: string;
+}
 
 // Model data for the runway
 const models = [
@@ -18,35 +33,96 @@ const models = [
     image: modelHero1, 
     name: "Sophia", 
     collection: "Gold Statement Collection",
-    description: "Layered gold necklaces & signature sunglasses"
+    description: "Layered gold necklaces & signature sunglasses",
+    hotspots: [
+      { id: "h1-1", x: "52%", y: "18%", type: "eyewear" as const, productName: "Cat-Eye Gold Frames", price: "£285", link: "/eyewear" },
+      { id: "h1-2", x: "48%", y: "28%", type: "jewelry" as const, productName: "Statement Gold Necklace", price: "£450", link: "/jewellery" },
+      { id: "h1-3", x: "52%", y: "35%", type: "jewelry" as const, productName: "Layered Chain Set", price: "£320", link: "/jewellery" },
+    ]
   },
   { 
     id: 2, 
-    image: modelHero2, 
-    name: "Alexander", 
-    collection: "Men's Luxe Collection",
-    description: "Gold aviators & premium accessories"
+    image: modelHero6, 
+    name: "Mei Lin", 
+    collection: "Rose Gold Elegance",
+    description: "Rose gold cat-eye frames & delicate chains",
+    hotspots: [
+      { id: "h2-1", x: "50%", y: "22%", type: "eyewear" as const, productName: "Rose Cat-Eye Sunglasses", price: "£295", link: "/eyewear" },
+      { id: "h2-2", x: "42%", y: "30%", type: "jewelry" as const, productName: "Diamond Hoop Earrings", price: "£380", link: "/jewellery" },
+      { id: "h2-3", x: "50%", y: "42%", type: "jewelry" as const, productName: "Layered Rose Necklaces", price: "£425", link: "/jewellery" },
+    ]
   },
   { 
     id: 3, 
-    image: modelHero3, 
-    name: "Victoria", 
-    collection: "Pearl & Gold Collection",
-    description: "Pearl jewelry with OAK & ASH cat-eye frames"
+    image: modelHero7, 
+    name: "Amara", 
+    collection: "Bold Gold Collection",
+    description: "Statement gold chain & oversized frames",
+    hotspots: [
+      { id: "h3-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Oversized Square Frames", price: "£340", link: "/eyewear" },
+      { id: "h3-2", x: "50%", y: "35%", type: "jewelry" as const, productName: "Chunky Gold Chain", price: "£580", link: "/jewellery" },
+      { id: "h3-3", x: "35%", y: "55%", type: "jewelry" as const, productName: "Gold Cuff Bracelets", price: "£420", link: "/jewellery" },
+    ]
   },
   { 
     id: 4, 
-    image: modelHero4, 
-    name: "Isabella", 
-    collection: "Diamond Chandelier Collection",
-    description: "Chandelier earrings & gold rectangular frames"
+    image: modelHero3, 
+    name: "Victoria", 
+    collection: "Pearl & Gold Collection",
+    description: "Pearl jewelry with OAK & ASH cat-eye frames",
+    hotspots: [
+      { id: "h4-1", x: "40%", y: "22%", type: "eyewear" as const, productName: "Tortoise Cat-Eye", price: "£265", link: "/eyewear" },
+      { id: "h4-2", x: "35%", y: "30%", type: "jewelry" as const, productName: "Pearl Drop Earrings", price: "£290", link: "/jewellery" },
+      { id: "h4-3", x: "32%", y: "58%", type: "jewelry" as const, productName: "Gold Bangle Stack", price: "£350", link: "/jewellery" },
+    ]
   },
   { 
     id: 5, 
+    image: modelHero8, 
+    name: "Elena", 
+    collection: "Emerald Luxe Collection",
+    description: "Emerald jewelry with gold aviator frames",
+    hotspots: [
+      { id: "h5-1", x: "50%", y: "15%", type: "eyewear" as const, productName: "Green Tint Aviators", price: "£310", link: "/eyewear" },
+      { id: "h5-2", x: "50%", y: "32%", type: "jewelry" as const, productName: "Emerald Statement Necklace", price: "£850", link: "/jewellery" },
+      { id: "h5-3", x: "35%", y: "52%", type: "jewelry" as const, productName: "Emerald Tennis Bracelet", price: "£720", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 6, 
+    image: modelHero4, 
+    name: "Isabella", 
+    collection: "Diamond Chandelier Collection",
+    description: "Chandelier earrings & gold rectangular frames",
+    hotspots: [
+      { id: "h6-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Gold Rectangle Frames", price: "£275", link: "/eyewear" },
+      { id: "h6-2", x: "40%", y: "28%", type: "jewelry" as const, productName: "Diamond Chandelier Earrings", price: "£680", link: "/jewellery" },
+      { id: "h6-3", x: "52%", y: "38%", type: "jewelry" as const, productName: "Diamond Cocktail Ring", price: "£520", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 7, 
     image: modelHero5, 
     name: "Catherine", 
     collection: "Silver Diamond Collection",
-    description: "Diamond tennis bracelet & tortoise sunglasses"
+    description: "Diamond tennis bracelet & tortoise sunglasses",
+    hotspots: [
+      { id: "h7-1", x: "38%", y: "22%", type: "eyewear" as const, productName: "Round Tortoise Sunglasses", price: "£255", link: "/eyewear" },
+      { id: "h7-2", x: "42%", y: "35%", type: "jewelry" as const, productName: "Diamond Pendant Necklace", price: "£890", link: "/jewellery" },
+      { id: "h7-3", x: "32%", y: "52%", type: "jewelry" as const, productName: "Diamond Tennis Bracelet", price: "£1,200", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 8, 
+    image: modelHero2, 
+    name: "Alexander", 
+    collection: "Men's Luxe Collection",
+    description: "Gold aviators & premium accessories",
+    hotspots: [
+      { id: "h8-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Gold Aviator Sunglasses", price: "£320", link: "/eyewear" },
+      { id: "h8-2", x: "45%", y: "42%", type: "jewelry" as const, productName: "Luxury Gold Watch", price: "£1,450", link: "/jewellery" },
+      { id: "h8-3", x: "52%", y: "48%", type: "jewelry" as const, productName: "Gold Cufflinks Set", price: "£280", link: "/jewellery" },
+    ]
   },
 ];
 
@@ -84,16 +160,94 @@ const DiamondSparkle = ({ delay, x, y }: { delay: number; x: string; y: string }
   </motion.div>
 );
 
+// Shop the Look Hotspot Component
+const ShopHotspot = ({ 
+  hotspot, 
+  isActive,
+  onHover,
+  onLeave,
+}: { 
+  hotspot: Hotspot;
+  isActive: boolean;
+  onHover: () => void;
+  onLeave: () => void;
+}) => {
+  return (
+    <motion.div
+      className="absolute z-30"
+      style={{ left: hotspot.x, top: hotspot.y }}
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0, opacity: 0 }}
+      transition={{ delay: 0.8, duration: 0.4 }}
+    >
+      {/* Pulsing hotspot */}
+      <motion.button
+        className="relative w-6 h-6 md:w-8 md:h-8"
+        onMouseEnter={onHover}
+        onMouseLeave={onLeave}
+        onClick={onHover}
+        whileHover={{ scale: 1.2 }}
+      >
+        {/* Outer pulse */}
+        <motion.div
+          className="absolute inset-0 rounded-full bg-amber-500/30"
+          animate={{ scale: [1, 1.8, 1], opacity: [0.5, 0, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+        {/* Inner circle */}
+        <div className="absolute inset-1 md:inset-1.5 rounded-full bg-amber-500 shadow-lg shadow-amber-500/50 flex items-center justify-center">
+          {hotspot.type === "eyewear" ? (
+            <Eye className="w-2.5 h-2.5 md:w-3 md:h-3 text-black" />
+          ) : (
+            <ShoppingBag className="w-2.5 h-2.5 md:w-3 md:h-3 text-black" />
+          )}
+        </div>
+      </motion.button>
+
+      {/* Product tooltip */}
+      <AnimatePresence>
+        {isActive && (
+          <motion.div
+            className="absolute left-10 top-0 min-w-48 bg-white/95 backdrop-blur-md shadow-xl rounded-sm p-4 z-40"
+            initial={{ opacity: 0, x: -10, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+          >
+            <p className="text-xs text-amber-600 uppercase tracking-wide mb-1">
+              {hotspot.type === "eyewear" ? "Eyewear" : "Jewelry"}
+            </p>
+            <h4 className="font-serif text-neutral-900 text-sm mb-1">
+              {hotspot.productName}
+            </h4>
+            <p className="text-amber-600 font-medium text-sm mb-3">
+              {hotspot.price}
+            </p>
+            <Link
+              to={hotspot.link}
+              className="inline-flex items-center gap-2 text-xs uppercase tracking-wide text-neutral-900 hover:text-amber-600 transition-colors"
+            >
+              Shop Now
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
 // Model slide with walking animation
 const ModelSlide = ({ 
   model, 
-  isActive, 
-  direction 
+  isActive,
 }: { 
   model: typeof models[0]; 
   isActive: boolean; 
-  direction: "enter" | "exit";
 }) => {
+  const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
+
   return (
     <AnimatePresence mode="wait">
       {isActive && (
@@ -101,7 +255,7 @@ const ModelSlide = ({
           key={model.id}
           className="absolute inset-0"
           initial={{ 
-            x: direction === "enter" ? "100%" : "-100%",
+            x: "100%",
             scale: 0.9,
             opacity: 0 
           }}
@@ -111,7 +265,7 @@ const ModelSlide = ({
             opacity: 1 
           }}
           exit={{ 
-            x: direction === "enter" ? "-100%" : "100%",
+            x: "-100%",
             scale: 0.9,
             opacity: 0 
           }}
@@ -125,16 +279,29 @@ const ModelSlide = ({
             src={model.image}
             alt={`${model.name} - ${model.collection}`}
             className="w-full h-full object-cover object-center"
-            initial={{ scale: 1.1 }}
+            initial={{ scale: 1.15 }}
             animate={{ 
               scale: 1,
-              x: [0, -15, 0],
+              x: [0, -20, 0],
             }}
             transition={{ 
-              scale: { duration: 8, ease: "linear" },
-              x: { duration: 8, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }
+              scale: { duration: 6, ease: "linear" },
+              x: { duration: 6, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }
             }}
           />
+
+          {/* Shop the Look Hotspots */}
+          <div className="hidden md:block">
+            {model.hotspots.map((hotspot) => (
+              <ShopHotspot
+                key={hotspot.id}
+                hotspot={hotspot}
+                isActive={activeHotspot === hotspot.id}
+                onHover={() => setActiveHotspot(hotspot.id)}
+                onLeave={() => setActiveHotspot(null)}
+              />
+            ))}
+          </div>
           
           {/* Model info overlay */}
           <motion.div
@@ -150,6 +317,22 @@ const ModelSlide = ({
               {model.description}
             </p>
           </motion.div>
+
+          {/* Shop the Look badge - Mobile */}
+          <motion.div
+            className="absolute top-24 right-4 md:hidden z-30"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1 }}
+          >
+            <Link
+              to="/jewellery"
+              className="flex items-center gap-2 bg-amber-500/90 backdrop-blur-sm px-4 py-2 text-black text-xs uppercase tracking-wide"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              Shop Look
+            </Link>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -159,8 +342,10 @@ const ModelSlide = ({
 export const HeroSection = () => {
   const ref = useRef<HTMLElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [direction, setDirection] = useState<"enter" | "exit">("enter");
+  const [isMuted, setIsMuted] = useState(true);
+  const [showShopPanel, setShowShopPanel] = useState(false);
   
   const { scrollY } = useScroll();
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
@@ -180,9 +365,8 @@ export const HeroSection = () => {
   // Auto-rotate models like a runway show
   useEffect(() => {
     const interval = setInterval(() => {
-      setDirection("enter");
       setActiveIndex((prev) => (prev + 1) % models.length);
-    }, 5000);
+    }, 6000);
 
     return () => clearInterval(interval);
   }, []);
@@ -217,21 +401,41 @@ export const HeroSection = () => {
     }
   }, []);
 
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
   return (
     <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+      {/* Video Background */}
+      <div className="absolute inset-0 z-0">
+        <video
+          ref={videoRef}
+          src={runwayVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover opacity-40"
+        />
+        <div className="absolute inset-0 bg-black/50" />
+      </div>
+
       {/* Background Models Slideshow */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 z-[1]">
         {models.map((model, index) => (
           <ModelSlide
             key={model.id}
             model={model}
             isActive={index === activeIndex}
-            direction={direction}
           />
         ))}
         
         {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/30 z-10" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/40 z-10" />
         
         {/* Golden ambient glow */}
@@ -245,14 +449,6 @@ export const HeroSection = () => {
           }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
-        
-        {/* Runway spotlight effect */}
-        <motion.div
-          className="absolute inset-0 z-10"
-          style={{
-            background: "linear-gradient(180deg, transparent 0%, transparent 60%, rgba(212, 184, 106, 0.1) 100%)"
-          }}
-        />
       </div>
 
       {/* Diamond Sparkles */}
@@ -262,15 +458,86 @@ export const HeroSection = () => {
         ))}
       </div>
 
+      {/* Audio Toggle */}
+      <motion.button
+        onClick={toggleMute}
+        className="absolute top-24 right-4 md:right-8 z-40 w-10 h-10 bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        aria-label={isMuted ? "Unmute" : "Mute"}
+      >
+        {isMuted ? (
+          <VolumeX className="w-4 h-4 text-white" />
+        ) : (
+          <Volume2 className="w-4 h-4 text-white" />
+        )}
+      </motion.button>
+
+      {/* Shop the Look Toggle */}
+      <motion.button
+        onClick={() => setShowShopPanel(!showShopPanel)}
+        className="absolute top-24 right-16 md:right-20 z-40 flex items-center gap-2 bg-amber-500/90 backdrop-blur-sm px-4 py-2.5 text-black text-xs uppercase tracking-wide hover:bg-amber-400 transition-colors"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <ShoppingBag className="w-4 h-4" />
+        <span className="hidden sm:inline">Shop the Look</span>
+      </motion.button>
+
+      {/* Shop Panel */}
+      <AnimatePresence>
+        {showShopPanel && (
+          <motion.div
+            className="absolute top-36 right-4 md:right-8 z-50 w-80 bg-white/95 backdrop-blur-md shadow-2xl"
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          >
+            <div className="p-4 border-b border-neutral-200 flex items-center justify-between">
+              <h3 className="font-serif text-lg text-neutral-900">
+                {models[activeIndex].name}'s Look
+              </h3>
+              <button onClick={() => setShowShopPanel(false)}>
+                <X className="w-5 h-5 text-neutral-500 hover:text-neutral-900" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4 max-h-80 overflow-y-auto">
+              {models[activeIndex].hotspots.map((item) => (
+                <Link
+                  key={item.id}
+                  to={item.link}
+                  className="flex items-center gap-4 p-3 bg-neutral-50 hover:bg-amber-50 transition-colors group"
+                >
+                  <div className="w-10 h-10 bg-amber-100 flex items-center justify-center">
+                    {item.type === "eyewear" ? (
+                      <Eye className="w-5 h-5 text-amber-600" />
+                    ) : (
+                      <ShoppingBag className="w-5 h-5 text-amber-600" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-amber-600 uppercase tracking-wide">
+                      {item.type}
+                    </p>
+                    <p className="font-medium text-neutral-900 text-sm">
+                      {item.productName}
+                    </p>
+                    <p className="text-amber-600 text-sm">{item.price}</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-neutral-400 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" />
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Model Indicator Dots */}
-      <div className="absolute right-6 md:right-10 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-3">
+      <div className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2">
         {models.map((model, index) => (
           <motion.button
             key={model.id}
-            onClick={() => {
-              setDirection(index > activeIndex ? "enter" : "exit");
-              setActiveIndex(index);
-            }}
+            onClick={() => setActiveIndex(index)}
             className={`w-2 h-2 rounded-full transition-all duration-300 ${
               index === activeIndex
                 ? "bg-amber-500 scale-150"
@@ -289,7 +556,7 @@ export const HeroSection = () => {
           className="h-full bg-gradient-to-r from-amber-500 to-amber-600"
           initial={{ width: "0%" }}
           animate={{ width: "100%" }}
-          transition={{ duration: 5, ease: "linear" }}
+          transition={{ duration: 6, ease: "linear" }}
           key={activeIndex}
         />
       </div>
@@ -356,7 +623,7 @@ export const HeroSection = () => {
         transition={{ duration: 0.5 }}
       >
         <p className="text-xs tracking-luxury uppercase text-white/50 font-sans mb-1">
-          Model
+          Model {activeIndex + 1} of {models.length}
         </p>
         <p className="font-serif text-2xl md:text-3xl text-white">
           {models[activeIndex].name}
