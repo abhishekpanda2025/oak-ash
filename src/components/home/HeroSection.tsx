@@ -13,6 +13,8 @@ import modelHero5 from "@/assets/model-hero-5.jpg";
 import modelHero6 from "@/assets/model-hero-6.jpg";
 import modelHero7 from "@/assets/model-hero-7.jpg";
 import modelHero8 from "@/assets/model-hero-8.jpg";
+import modelHero9 from "@/assets/model-hero-9.jpg";
+import modelHero10 from "@/assets/model-hero-10.jpg";
 import runwayVideo from "@/assets/runway-background.mp4";
 
 // Shop the look hotspot type
@@ -122,6 +124,30 @@ const models = [
       { id: "h8-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Gold Aviator Sunglasses", price: "£320", link: "/eyewear" },
       { id: "h8-2", x: "45%", y: "42%", type: "jewelry" as const, productName: "Luxury Gold Watch", price: "£1,450", link: "/jewellery" },
       { id: "h8-3", x: "52%", y: "48%", type: "jewelry" as const, productName: "Gold Cufflinks Set", price: "£280", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 9, 
+    image: modelHero9, 
+    name: "Valentina", 
+    collection: "Royal Gold Collection",
+    description: "Layered gold statement pieces & designer shades",
+    hotspots: [
+      { id: "h9-1", x: "50%", y: "20%", type: "eyewear" as const, productName: "Gradient Square Frames", price: "£295", link: "/eyewear" },
+      { id: "h9-2", x: "50%", y: "32%", type: "jewelry" as const, productName: "Royal Gold Choker", price: "£680", link: "/jewellery" },
+      { id: "h9-3", x: "40%", y: "50%", type: "jewelry" as const, productName: "Gold Cuff Bracelets", price: "£420", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 10, 
+    image: modelHero10, 
+    name: "Anastasia", 
+    collection: "Pearl Couture Collection",
+    description: "Baroque pearl statement necklace & crystal earrings",
+    hotspots: [
+      { id: "h10-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Cat-Eye Crystal Frames", price: "£345", link: "/eyewear" },
+      { id: "h10-2", x: "42%", y: "25%", type: "jewelry" as const, productName: "Diamond Drop Earrings", price: "£520", link: "/jewellery" },
+      { id: "h10-3", x: "50%", y: "38%", type: "jewelry" as const, productName: "Pearl Collar Necklace", price: "£890", link: "/jewellery" },
     ]
   },
 ];
