@@ -9,7 +9,7 @@ const CRAFTSMANSHIP_VIDEO = "https://player.vimeo.com/external/519695326.hd.mp4?
 export const CraftsmanshipSection = () => {
   const ref = useRef(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, amount: 0.2 });
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(false);
@@ -20,6 +20,7 @@ export const CraftsmanshipSection = () => {
   });
   
   const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -44,7 +45,7 @@ export const CraftsmanshipSection = () => {
       {/* Background with parallax */}
       <motion.div 
         className="absolute inset-0"
-        style={{ y }}
+        style={{ y: bgY }}
       >
         <div className="absolute inset-0 bg-neutral-900" />
         {/* Subtle pattern overlay */}
@@ -60,13 +61,17 @@ export const CraftsmanshipSection = () => {
           {/* Video/Image Side */}
           <motion.div
             className="relative"
-            initial={{ opacity: 0, x: -60 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, x: -80, scale: 0.95 }}
+            animate={isInView ? { opacity: 1, x: 0, scale: 1 } : {}}
+            transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
             onMouseEnter={() => setShowControls(true)}
             onMouseLeave={() => setShowControls(false)}
           >
-            <div className="relative aspect-[4/5] overflow-hidden">
+            <motion.div 
+              className="relative aspect-[4/5] overflow-hidden"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.6 }}
+            >
               {/* Autoplay Video */}
               <video
                 ref={videoRef}
@@ -81,7 +86,7 @@ export const CraftsmanshipSection = () => {
               
               {/* Video Controls Overlay */}
               <motion.div
-                className="absolute inset-0 flex items-center justify-center"
+                className="absolute inset-0 flex items-center justify-center bg-black/20"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: showControls ? 1 : 0 }}
                 transition={{ duration: 0.3 }}
@@ -116,48 +121,63 @@ export const CraftsmanshipSection = () => {
               
               {/* Gold frame decoration */}
               <div className="absolute -inset-4 border border-amber-500/30 pointer-events-none" />
-            </div>
+            </motion.div>
             
             {/* Decorative element */}
             <motion.div
               className="absolute -bottom-6 -right-6 w-40 h-40 border border-amber-500/20"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={isInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
             />
           </motion.div>
 
           {/* Content Side */}
           <motion.div
-            initial={{ opacity: 0, x: 60 }}
+            initial={{ opacity: 0, x: 80 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            <p className="text-xs tracking-luxury uppercase text-amber-400 mb-6 font-sans font-light">
+            <motion.p 
+              className="text-xs tracking-luxury uppercase text-amber-400 mb-6 font-sans font-light"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
               Our Craftsmanship
-            </p>
+            </motion.p>
             
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-white mb-8 leading-tight">
+            <motion.h2 
+              className="font-serif text-3xl md:text-4xl lg:text-5xl text-white mb-8 leading-tight"
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            >
               Inspired by the Strength of Oak
               <br />
               <span className="italic text-amber-400">&amp; the Grace of Ash</span>
-            </h2>
+            </motion.h2>
             
-            <div className="space-y-6 text-neutral-300 font-sans font-light leading-relaxed text-base">
+            <motion.div 
+              className="space-y-6 text-neutral-300 font-sans font-light leading-relaxed text-base"
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
               <p>
                 Every piece in our collection represents a harmony between timeless design and modern elegance. Our master artisans bring decades of expertise to each creation.
               </p>
               <p>
                 From the initial sketch to the final polish, each piece of OAK &amp; ASH jewelry passes through the hands of skilled craftspeople who treat every creation as a work of art.
               </p>
-            </div>
+            </motion.div>
 
             {/* Editorial Quote */}
             <motion.blockquote
               className="mt-12 pl-6 border-l-2 border-amber-500/50"
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.5 }}
+              initial={{ opacity: 0, x: -30 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.7 }}
             >
               <p className="font-serif text-xl italic text-white leading-relaxed">
                 "Every piece is crafted to become part of your story."
@@ -176,9 +196,9 @@ export const CraftsmanshipSection = () => {
               ].map((stat, index) => (
                 <motion.div
                   key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
+                  transition={{ duration: 0.6, delay: 0.8 + index * 0.15 }}
                 >
                   <span className="font-serif text-3xl md:text-4xl text-amber-400">
                     {stat.value}

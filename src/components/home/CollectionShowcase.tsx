@@ -43,46 +43,92 @@ const collections = [
 
 export const CollectionShowcase = () => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, amount: 0.2 });
+
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 60, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.7,
+        ease: [0.25, 0.1, 0.25, 1] as const,
+      },
+    },
+  };
 
   return (
-    <section ref={ref} className="section-padding bg-neutral-900">
+    <section ref={ref} className="section-padding bg-neutral-900 overflow-hidden">
       <div className="container-luxury">
         {/* Header */}
         <motion.div
           className="flex flex-col md:flex-row md:items-end md:justify-between mb-14 md:mb-20"
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 50 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
         >
           <div>
-            <p className="text-xs tracking-luxury uppercase text-amber-400 mb-4 font-sans font-light">
+            <motion.p 
+              className="text-xs tracking-luxury uppercase text-amber-400 mb-4 font-sans font-light"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
               Shop by Collection
-            </p>
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-white">
+            </motion.p>
+            <motion.h2 
+              className="font-serif text-3xl md:text-4xl lg:text-5xl text-white"
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
               Find Your Perfect Shade
-            </h2>
+            </motion.h2>
           </div>
-          <Link
-            to="/jewellery"
-            className="group inline-flex items-center gap-2.5 text-xs tracking-wide uppercase font-sans mt-6 md:mt-0 text-neutral-400 hover:text-amber-400 transition-colors duration-300"
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.3 }}
           >
-            View All Collections
-            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </Link>
+            <Link
+              to="/jewellery"
+              className="group inline-flex items-center gap-2.5 text-xs tracking-wide uppercase font-sans mt-6 md:mt-0 text-neutral-400 hover:text-amber-400 transition-colors duration-300"
+            >
+              View All Collections
+              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
         </motion.div>
 
         {/* Collection Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 md:gap-6">
-          {collections.map((collection, index) => (
+        <motion.div 
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 md:gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+        >
+          {collections.map((collection) => (
             <motion.div
               key={collection.name}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              variants={itemVariants}
             >
               <Link to={collection.href} className="group block">
-                <div className="relative overflow-hidden aspect-square mb-5">
+                <motion.div 
+                  className="relative overflow-hidden aspect-square mb-5"
+                  whileHover={{ y: -8 }}
+                  transition={{ duration: 0.4 }}
+                >
                   {/* Gradient Background */}
                   <motion.div
                     className={`w-full h-full bg-gradient-to-br ${collection.gradient}`}
@@ -112,7 +158,7 @@ export const CollectionShowcase = () => {
                   
                   {/* Gold glow on hover */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-[inset_0_0_30px_rgba(212,184,106,0.3)]" />
-                </div>
+                </motion.div>
                 
                 <div className="text-center">
                   <h3 className="font-serif text-lg text-white group-hover:text-amber-400 transition-colors duration-300 mb-1">
@@ -125,7 +171,7 @@ export const CollectionShowcase = () => {
               </Link>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

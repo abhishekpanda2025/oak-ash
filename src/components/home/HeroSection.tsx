@@ -3,45 +3,7 @@ import { useRef, useEffect, useMemo } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
-import heroImage from "@/assets/hero-jewelry.jpg";
-
-// Floating jewelry icons with elegant animations
-const FloatingJewelry = ({ 
-  icon, 
-  delay, 
-  duration, 
-  startX, 
-  startY,
-  size = "text-2xl"
-}: { 
-  icon: string; 
-  delay: number; 
-  duration: number; 
-  startX: string;
-  startY: string;
-  size?: string;
-}) => (
-  <motion.div
-    className={`absolute ${size} pointer-events-none select-none`}
-    style={{ left: startX, top: startY }}
-    initial={{ opacity: 0, scale: 0, rotate: -20 }}
-    animate={{ 
-      opacity: [0, 0.8, 0.8, 0],
-      scale: [0.5, 1, 1, 0.5],
-      rotate: [0, 10, -10, 0],
-      y: [0, -100, -200, -300],
-      x: [0, 20, -20, 0],
-    }}
-    transition={{
-      duration,
-      delay,
-      repeat: Infinity,
-      ease: "easeInOut",
-    }}
-  >
-    {icon}
-  </motion.div>
-);
+import heroPremium from "@/assets/hero-premium.jpg";
 
 // Diamond sparkle effect
 const DiamondSparkle = ({ delay, x, y }: { delay: number; x: string; y: string }) => (
@@ -75,30 +37,6 @@ const DiamondSparkle = ({ delay, x, y }: { delay: number; x: string; y: string }
       </defs>
     </svg>
   </motion.div>
-);
-
-// Gold particle with shimmer
-const GoldParticle = ({ delay, duration, left }: { delay: number; duration: number; left: string }) => (
-  <motion.div
-    className="absolute w-1.5 h-1.5 rounded-full bg-gold-shimmer"
-    style={{ 
-      left,
-      boxShadow: "0 0 10px hsl(43 80% 65% / 0.5)"
-    }}
-    initial={{ y: "100vh", opacity: 0, scale: 0 }}
-    animate={{ 
-      y: "-100vh", 
-      opacity: [0, 1, 1, 0],
-      scale: [0, 1.2, 1, 0],
-      rotate: [0, 360, 720]
-    }}
-    transition={{
-      duration,
-      delay,
-      repeat: Infinity,
-      ease: "linear",
-    }}
-  />
 );
 
 // Animated letter component
@@ -149,28 +87,6 @@ export const HeroSection = () => {
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
   const scale = useTransform(scrollY, [0, 500], [1, 1.1]);
 
-  // Generate particles
-  const particles = useMemo(() => {
-    return Array.from({ length: 25 }).map((_, i) => ({
-      id: i,
-      delay: Math.random() * 10,
-      duration: 12 + Math.random() * 8,
-      left: `${Math.random() * 100}%`,
-    }));
-  }, []);
-
-  // Floating jewelry items
-  const jewelryItems = useMemo(() => [
-    { icon: "💍", delay: 0, duration: 8, startX: "10%", startY: "70%", size: "text-3xl" },
-    { icon: "✨", delay: 2, duration: 6, startX: "85%", startY: "60%", size: "text-2xl" },
-    { icon: "💎", delay: 1, duration: 7, startX: "20%", startY: "80%", size: "text-4xl" },
-    { icon: "📿", delay: 3, duration: 9, startX: "75%", startY: "75%", size: "text-3xl" },
-    { icon: "👑", delay: 4, duration: 8, startX: "90%", startY: "85%", size: "text-2xl" },
-    { icon: "💫", delay: 1.5, duration: 7, startX: "5%", startY: "60%", size: "text-xl" },
-    { icon: "🔗", delay: 2.5, duration: 6, startX: "95%", startY: "70%", size: "text-2xl" },
-    { icon: "💍", delay: 5, duration: 8, startX: "15%", startY: "90%", size: "text-2xl" },
-  ], []);
-
   // Diamond sparkles
   const sparkles = useMemo(() => [
     { delay: 0, x: "25%", y: "30%" },
@@ -209,72 +125,44 @@ export const HeroSection = () => {
 
   return (
     <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image with Parallax */}
+      {/* Premium Background with Model */}
       <motion.div
         className="absolute inset-0"
         style={{ y, scale }}
       >
         <motion.img
-          src={heroImage}
-          alt="Premium jewelry collection"
-          className="w-full h-full object-cover"
-          initial={{ scale: 1.2 }}
-          animate={{ scale: 1 }}
+          src={heroPremium}
+          alt="OAK & ASH - Premium Jewelry and Eyewear"
+          className="w-full h-full object-cover object-center"
+          initial={{ scale: 1.2, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
         />
         
-        {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30" />
+        {/* Premium Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/40" />
         
-        {/* Animated light reflections */}
+        {/* Golden ambient glow around model */}
         <motion.div 
           className="absolute inset-0"
           style={{
-            background: "radial-gradient(circle at 30% 40%, rgba(212, 184, 106, 0.15) 0%, transparent 50%)"
+            background: "radial-gradient(ellipse at 60% 50%, rgba(212, 184, 106, 0.2) 0%, transparent 50%)"
           }}
           animate={{ 
-            opacity: [0.3, 0.6, 0.3],
-            scale: [1, 1.1, 1],
+            opacity: [0.4, 0.7, 0.4],
           }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div 
-          className="absolute inset-0"
-          style={{
-            background: "radial-gradient(circle at 70% 60%, rgba(212, 184, 106, 0.1) 0%, transparent 40%)"
-          }}
-          animate={{ 
-            opacity: [0.2, 0.5, 0.2],
-            scale: [1.1, 1, 1.1],
-          }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
+        
+        {/* Subtle vignette effect */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
       </motion.div>
 
       {/* Diamond Sparkles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {sparkles.map((sparkle, i) => (
           <DiamondSparkle key={i} {...sparkle} />
-        ))}
-      </div>
-
-      {/* Gold Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {particles.map((particle) => (
-          <GoldParticle
-            key={particle.id}
-            delay={particle.delay}
-            duration={particle.duration}
-            left={particle.left}
-          />
-        ))}
-      </div>
-
-      {/* Floating Jewelry */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {jewelryItems.map((item, i) => (
-          <FloatingJewelry key={i} {...item} />
         ))}
       </div>
 
@@ -285,50 +173,47 @@ export const HeroSection = () => {
         style={{ opacity }}
       >
         <div className="max-w-3xl">
-          <motion.p 
-            className="hero-subtitle text-xs md:text-sm tracking-luxury uppercase mb-6 md:mb-8 font-sans font-light text-amber-200"
+          {/* Brand Badge */}
+          <motion.div
+            className="hero-subtitle inline-flex items-center gap-3 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
           >
-            New Collection 2026
-          </motion.p>
+            <span className="h-px w-12 bg-amber-400" />
+            <span className="text-xs md:text-sm tracking-luxury uppercase font-sans font-light text-amber-200">
+              Jewellery & Eyewear
+            </span>
+            <span className="h-px w-12 bg-amber-400" />
+          </motion.div>
 
           {/* Animated Title */}
-          <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal leading-tight mb-8 md:mb-10 text-white">
+          <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal leading-[1.1] mb-8 md:mb-10 text-white">
             <span className="block overflow-hidden">
-              <AnimatedWord word="Crafted by" baseDelay={0.8} />
+              <AnimatedWord word="Define Your" baseDelay={0.8} />
             </span>
-            <span className="block overflow-hidden">
-              <AnimatedWord word="Passion" baseDelay={1.3} className="italic text-amber-300" />
-              <motion.span 
-                className="inline-block text-amber-400 mx-2"
-                initial={{ opacity: 0, scale: 0, rotate: -180 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ delay: 1.8, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              >
-                &amp;
-              </motion.span>
-            </span>
-            <span className="block overflow-hidden">
-              <AnimatedWord word="Worn Forever." baseDelay={2.2} />
+            <span className="block overflow-hidden mt-2">
+              <AnimatedWord word="Presence" baseDelay={1.4} className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500" />
             </span>
           </h1>
 
-          <p className="hero-description text-sm md:text-base text-white/80 max-w-lg mb-10 md:mb-12 font-sans font-light leading-relaxed">
-            Discover our curated collection of premium jewelry, where every piece tells a story of artistry, heritage, and timeless elegance.
+          <p className="hero-description text-base md:text-lg text-white/80 max-w-xl mb-10 md:mb-12 font-sans font-light leading-relaxed">
+            Experience the art of craftsmanship with our exclusive collection of handcrafted jewelry and designer eyewear, where elegance meets timeless style.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-5">
             <Link
-              to="/collection/new-in"
+              to="/jewellery"
               className="hero-cta group inline-flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black px-10 py-4 text-sm tracking-wide uppercase font-sans font-medium transition-all duration-500 hover:from-amber-400 hover:to-amber-500 hover:shadow-lg hover:shadow-amber-500/30"
             >
-              Shop New In
+              Shop Jewellery
               <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
             <Link
-              to="/jewellery"
+              to="/eyewear"
               className="hero-cta group inline-flex items-center justify-center gap-3 border border-white/50 text-white px-10 py-4 text-sm tracking-wide uppercase font-sans font-light hover:bg-white/10 hover:border-white transition-all duration-500 backdrop-blur-sm"
             >
-              Explore Collections
+              Shop Eyewear
             </Link>
           </div>
         </div>
@@ -345,7 +230,7 @@ export const HeroSection = () => {
           Scroll to Discover
         </span>
         <motion.div
-          className="w-px h-12 bg-gradient-to-b from-white/60 to-transparent"
+          className="w-px h-12 bg-gradient-to-b from-amber-400/60 to-transparent"
           animate={{ scaleY: [1, 0.5, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
