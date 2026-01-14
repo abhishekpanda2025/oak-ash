@@ -14,19 +14,18 @@ import {
   Check,
   ZoomIn,
   X,
-  Package,
   Gem,
   Ruler
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LocalCartDrawer } from "@/components/cart/LocalCartDrawer";
-import { Button } from "@/components/ui/button";
 import { DemoProductCard } from "@/components/products/DemoProductCard";
 import { PageTransition, ScrollReveal } from "@/components/animations/PageTransition";
 import { getProductByHandle, demoProducts, DemoProduct } from "@/data/demoProducts";
 import { useLocalCartStore } from "@/stores/localCartStore";
 import { SizeRecommendation } from "@/components/products/SizeRecommendation";
+import { Product3DViewer } from "@/components/products/Product3DViewer";
 import { toast } from "sonner";
 
 // Import images
@@ -62,6 +61,7 @@ const DemoProductDetail = () => {
   const [isAdded, setIsAdded] = useState(false);
   const [selectedSize, setSelectedSize] = useState("M");
   const [showSizeRecommendation, setShowSizeRecommendation] = useState(false);
+  const [show3DViewer, setShow3DViewer] = useState(false);
   
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
@@ -291,14 +291,14 @@ const DemoProductDetail = () => {
                   </div>
                 </div>
 
-                {/* Thumbnails */}
+                {/* Thumbnails + 3D View Toggle */}
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                   {images.map((img, index) => (
                     <motion.button
                       key={index}
-                      onClick={() => setCurrentImageIndex(index)}
+                      onClick={() => { setCurrentImageIndex(index); setShow3DViewer(false); }}
                       className={`relative w-20 h-24 flex-shrink-0 overflow-hidden transition-all ${
-                        index === currentImageIndex
+                        index === currentImageIndex && !show3DViewer
                           ? "ring-2 ring-primary"
                           : "opacity-60 hover:opacity-100"
                       }`}
@@ -312,7 +312,46 @@ const DemoProductDetail = () => {
                       />
                     </motion.button>
                   ))}
+                  
+                  {/* 3D Viewer Toggle Button */}
+                  <motion.button
+                    onClick={() => setShow3DViewer(true)}
+                    className={`relative w-20 h-24 flex-shrink-0 overflow-hidden transition-all flex flex-col items-center justify-center gap-1 ${
+                      show3DViewer
+                        ? "ring-2 ring-primary bg-primary/10"
+                        : "bg-secondary opacity-60 hover:opacity-100"
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <motion.div
+                      animate={{ rotateY: [0, 360] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                      className="text-xl"
+                    >
+                      💎
+                    </motion.div>
+                    <span className="text-[10px] font-medium text-center leading-tight">360° View</span>
+                  </motion.button>
                 </div>
+
+                {/* 3D Product Viewer */}
+                <AnimatePresence>
+                  {show3DViewer && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <Product3DViewer 
+                        images={images} 
+                        productName={product.title} 
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
 
               {/* Product Info */}

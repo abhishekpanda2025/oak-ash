@@ -7,7 +7,6 @@ import { AnimatePresence } from "framer-motion";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/animations/LoadingScreen";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { VirtualTryOn } from "@/components/tryon/VirtualTryOn";
 import { OakAshChatbot } from "@/components/chatbot/OakAshChatbot";
 import { useState, useEffect, useRef } from "react";
 import Index from "./pages/Index";
@@ -63,8 +62,6 @@ const AnimatedRoutes = () => {
   return (
     <>
       <ScrollToTop />
-      {/* Virtual Try-On available on all pages */}
-      <VirtualTryOn />
       {/* OAK & ASH Chatbot available on all pages */}
       <OakAshChatbot />
       
