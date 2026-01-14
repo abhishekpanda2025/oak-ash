@@ -122,13 +122,28 @@ export const Header = () => {
             </button>
 
             {/* Logo - OAK & ASH Full Text */}
-            <Link to="/" className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 flex items-center gap-2">
+            <Link 
+              to="/" 
+              className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 flex items-center gap-2"
+              onClick={(e) => {
+                // If already on home page, scroll to top and refresh
+                if (location.pathname === "/") {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  // Force refresh after smooth scroll
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 500);
+                }
+              }}
+            >
               <motion.div
                 className="flex items-center"
                 whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.3 }}
               >
-                <h1 className="text-lg md:text-xl font-serif font-normal tracking-wide leading-none">
+                <h1 className="text-lg md:text-xl font-serif font-normal tracking-wide leading-none cursor-pointer">
                   <span className={`transition-colors duration-500 ${shouldUseDarkText ? "text-neutral-900" : "text-white"}`}>
                     OAK
                   </span>
