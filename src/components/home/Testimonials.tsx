@@ -1,5 +1,4 @@
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useRef, useState } from "react";
 import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -26,7 +25,7 @@ const testimonials = [
 
 export const Testimonials = () => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
   const [activeIndex, setActiveIndex] = useState(0);
 
   const nextTestimonial = () => {
@@ -38,58 +37,79 @@ export const Testimonials = () => {
   };
 
   return (
-    <section ref={ref} className="section-padding bg-white">
+    <section ref={ref} className="section-padding bg-white overflow-hidden">
       <div className="container-luxury">
         <motion.div
           className="text-center mb-12"
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 50 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <p className="text-xs tracking-luxury uppercase text-amber-600 mb-4 font-sans">
+          <motion.p 
+            className="text-xs tracking-luxury uppercase text-amber-600 mb-4 font-sans"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
             Testimonials
-          </p>
-          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium text-neutral-800">
+          </motion.p>
+          <motion.h2 
+            className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium text-neutral-800"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
             What Our Clients Say
-          </h2>
+          </motion.h2>
         </motion.div>
 
         <motion.div
           className="max-w-3xl mx-auto"
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={isInView ? { opacity: 1, scale: 1 } : {}}
+          transition={{ duration: 0.8, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
         >
           <div className="relative">
             {/* Navigation */}
-            <button
+            <motion.button
               onClick={prevTestimonial}
               className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 p-2 text-neutral-400 hover:text-amber-600 transition-colors hidden md:block"
               aria-label="Previous testimonial"
+              whileHover={{ x: -4 }}
+              whileTap={{ scale: 0.95 }}
             >
               <ChevronLeft className="w-6 h-6" />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={nextTestimonial}
               className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 p-2 text-neutral-400 hover:text-amber-600 transition-colors hidden md:block"
               aria-label="Next testimonial"
+              whileHover={{ x: 4 }}
+              whileTap={{ scale: 0.95 }}
             >
               <ChevronRight className="w-6 h-6" />
-            </button>
+            </motion.button>
 
             {/* Testimonial Content */}
             <motion.div
               key={activeIndex}
               className="text-center px-4 md:px-12"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
+              exit={{ opacity: 0, y: -30 }}
+              transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
             >
               {/* Stars */}
               <div className="flex justify-center gap-1 mb-6">
                 {[...Array(testimonials[activeIndex].rating)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: i * 0.1 }}
+                  >
+                    <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                  </motion.div>
                 ))}
               </div>
 
@@ -113,15 +133,17 @@ export const Testimonials = () => {
           {/* Dots */}
           <div className="flex justify-center gap-2 mt-10">
             {testimonials.map((_, index) => (
-              <button
+              <motion.button
                 key={index}
                 onClick={() => setActiveIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all ${
+                className={`h-2 rounded-full transition-all duration-300 ${
                   index === activeIndex
                     ? "bg-amber-500 w-8"
-                    : "bg-neutral-300 hover:bg-neutral-400"
+                    : "bg-neutral-300 hover:bg-neutral-400 w-2"
                 }`}
                 aria-label={`Go to testimonial ${index + 1}`}
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
               />
             ))}
           </div>

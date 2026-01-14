@@ -77,22 +77,28 @@ export const NewsletterPopup = () => {
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
           />
 
-          {/* Modal */}
+          {/* Modal - Perfectly Centered */}
           <motion.div
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md px-4"
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            <div className="relative bg-white overflow-hidden shadow-2xl">
+            <motion.div
+              className="relative bg-white overflow-hidden shadow-2xl w-full max-w-md mx-auto"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Close Button */}
               <button
                 onClick={handleClose}
@@ -111,7 +117,7 @@ export const NewsletterPopup = () => {
                   {!isSubmitted ? (
                     <motion.div
                       key="form"
-                      className="text-center"
+                      className="flex flex-col items-center justify-center text-center"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
@@ -119,7 +125,7 @@ export const NewsletterPopup = () => {
                     >
                       {/* Icon */}
                       <motion.div
-                        className="w-16 h-16 bg-amber-100 mx-auto mb-6 flex items-center justify-center"
+                        className="w-16 h-16 bg-amber-100 flex items-center justify-center mb-6"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ type: "spring", delay: 0.2 }}
@@ -129,7 +135,7 @@ export const NewsletterPopup = () => {
 
                       {/* Discount Badge */}
                       <motion.div
-                        className="inline-block mb-4"
+                        className="mb-4"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.3 }}
@@ -144,12 +150,12 @@ export const NewsletterPopup = () => {
                       </h3>
                       
                       {/* Description */}
-                      <p className="text-sm text-neutral-600 font-sans font-light mb-8 leading-relaxed text-center max-w-sm mx-auto">
+                      <p className="text-sm text-neutral-600 font-sans font-light mb-8 leading-relaxed text-center max-w-sm">
                         By signing up to our mailing list you will receive discounts and exclusive offers.
                       </p>
 
                       {/* Form */}
-                      <form onSubmit={handleSubmit} className="space-y-4 max-w-xs mx-auto">
+                      <form onSubmit={handleSubmit} className="w-full space-y-4 max-w-xs">
                         <input
                           type="email"
                           value={email}
@@ -176,13 +182,13 @@ export const NewsletterPopup = () => {
                   ) : (
                     <motion.div
                       key="success"
-                      className="text-center py-8"
+                      className="flex flex-col items-center justify-center text-center py-8"
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.5 }}
                     >
                       <motion.div
-                        className="w-20 h-20 bg-green-100 mx-auto mb-6 flex items-center justify-center rounded-full"
+                        className="w-20 h-20 bg-green-100 flex items-center justify-center rounded-full mb-6"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ type: "spring", delay: 0.2 }}
@@ -203,7 +209,7 @@ export const NewsletterPopup = () => {
               {/* Decorative corners */}
               <div className="absolute top-8 left-8 w-8 h-8 border-l border-t border-amber-300/50" />
               <div className="absolute bottom-8 right-8 w-8 h-8 border-r border-b border-amber-300/50" />
-            </div>
+            </motion.div>
           </motion.div>
         </>
       )}
