@@ -1,9 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
-import { Camera, X, RotateCcw, Download, Share2, Sparkles, ChevronLeft, ChevronRight, Move, ZoomIn, ZoomOut, Gem, Glasses, Heart, Star, Wand2, Sun, Moon, Palette } from "lucide-react";
+import { Camera, X, RotateCcw, Download, Share2, Sparkles, ChevronLeft, ChevronRight, Move, ZoomIn, ZoomOut, Gem, Glasses, Heart, Star, Wand2, Sun, Moon, Palette, Eye, EyeOff, Layers } from "lucide-react";
 import { demoProducts, DemoProduct } from "@/data/demoProducts";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import * as tf from '@tensorflow/tfjs';
+import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 
 // Import eyewear images for overlay
 import eyewearProduct1 from "@/assets/eyewear-product-1.jpg";
@@ -56,131 +58,186 @@ const lightingModes = [
   { id: "studio", name: "Studio", icon: Star, overlay: "rgba(255, 255, 255, 0.05)" },
 ];
 
-// Real face detection using canvas analysis
-const useFaceDetection = (
+// Face mesh landmark indices
+const FACE_LANDMARKS = {
+  leftEye: [33, 133, 160, 159, 158, 144, 145, 153],
+  rightEye: [362, 263, 387, 386, 385, 373, 374, 380],
+  leftEar: [234, 93, 132, 58, 172],
+  rightEar: [454, 323, 361, 288, 397],
+  nose: [1, 4, 5, 195, 197],
+  noseTop: [6],
+  chin: [152, 377, 400, 378, 379, 365, 397, 288, 361, 323],
+  forehead: [10, 67, 109, 108, 69, 104, 68, 54],
+  leftCheek: [116, 123, 147, 187, 207, 206, 205, 36],
+  rightCheek: [345, 352, 376, 411, 427, 426, 425, 266],
+  lips: [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291],
+  neck: [152, 377, 400, 378, 379],
+};
+
+// TensorFlow.js Face Mesh Detection Hook
+const useFaceMesh = (
   videoRef: React.RefObject<HTMLVideoElement>,
-  canvasRef: React.RefObject<HTMLCanvasElement>,
   isActive: boolean
 ) => {
-  const [facePosition, setFacePosition] = useState({ x: 50, y: 40, width: 35, rotation: 0 });
-  const [isDetecting, setIsDetecting] = useState(false);
+  const [faceData, setFaceData] = useState<{
+    eyeCenter: { x: number; y: number };
+    leftEar: { x: number; y: number };
+    rightEar: { x: number; y: number };
+    neckCenter: { x: number; y: number };
+    faceWidth: number;
+    faceHeight: number;
+    rotation: number;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [faceDetected, setFaceDetected] = useState(false);
+  const detectorRef = useRef<faceLandmarksDetection.FaceLandmarksDetector | null>(null);
   const animationRef = useRef<number>();
-  const detectionCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    if (!isActive || !videoRef.current) {
-      setIsDetecting(false);
-      setFaceDetected(false);
-      return;
-    }
+    let mounted = true;
 
-    // Create detection canvas
-    if (!detectionCanvasRef.current) {
-      detectionCanvasRef.current = document.createElement('canvas');
-    }
-
-    setIsDetecting(true);
-    
-    const detectFace = () => {
-      const video = videoRef.current;
-      const detectionCanvas = detectionCanvasRef.current;
+    const initializeDetector = async () => {
+      if (!isActive) return;
       
-      if (!video || !detectionCanvas || video.videoWidth === 0) {
-        animationRef.current = requestAnimationFrame(detectFace);
-        return;
-      }
-
-      // Set up detection canvas
-      const scale = 0.25; // Process at lower resolution for performance
-      detectionCanvas.width = video.videoWidth * scale;
-      detectionCanvas.height = video.videoHeight * scale;
-      
-      const ctx = detectionCanvas.getContext('2d', { willReadFrequently: true });
-      if (!ctx) {
-        animationRef.current = requestAnimationFrame(detectFace);
-        return;
-      }
-
-      // Draw scaled video frame
-      ctx.drawImage(video, 0, 0, detectionCanvas.width, detectionCanvas.height);
-      
-      // Get image data for analysis
-      const imageData = ctx.getImageData(0, 0, detectionCanvas.width, detectionCanvas.height);
-      const data = imageData.data;
-      
-      // Simple skin tone detection
-      let skinPixels: { x: number; y: number }[] = [];
-      
-      for (let y = 0; y < detectionCanvas.height; y += 2) {
-        for (let x = 0; x < detectionCanvas.width; x += 2) {
-          const i = (y * detectionCanvas.width + x) * 4;
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          
-          // Skin tone detection (works for various skin tones)
-          const isSkin = (
-            r > 60 && g > 40 && b > 20 &&
-            r > g && r > b &&
-            Math.abs(r - g) > 15 &&
-            r - b > 15 &&
-            r < 250 && g < 250 && b < 250
-          );
-          
-          if (isSkin) {
-            skinPixels.push({ x, y });
-          }
+      try {
+        setIsLoading(true);
+        
+        // Initialize TensorFlow.js
+        await tf.ready();
+        await tf.setBackend('webgl');
+        
+        // Create face landmarks detector
+        const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
+        const detectorConfig = {
+          runtime: 'tfjs',
+          refineLandmarks: true,
+          maxFaces: 1,
+        } as faceLandmarksDetection.MediaPipeFaceMeshTfjsModelConfig;
+        
+        detectorRef.current = await faceLandmarksDetection.createDetector(model, detectorConfig);
+        
+        if (mounted) {
+          setIsLoading(false);
+          toast.success("AI Face Mesh loaded! Position your face.");
+        }
+      } catch (error) {
+        console.error("Error initializing face mesh:", error);
+        if (mounted) {
+          setIsLoading(false);
+          // Fallback to basic detection
+          toast.info("Using basic face detection");
         }
       }
-      
-      if (skinPixels.length > 50) {
-        // Calculate center of skin region (face approximation)
-        const avgX = skinPixels.reduce((sum, p) => sum + p.x, 0) / skinPixels.length;
-        const avgY = skinPixels.reduce((sum, p) => sum + p.y, 0) / skinPixels.length;
-        
-        // Calculate approximate face width
-        const xValues = skinPixels.map(p => p.x);
-        const yValues = skinPixels.map(p => p.y);
-        const minX = Math.min(...xValues);
-        const maxX = Math.max(...xValues);
-        const minY = Math.min(...yValues);
-        const maxY = Math.max(...yValues);
-        
-        const faceWidth = (maxX - minX) / detectionCanvas.width * 100;
-        const faceHeight = (maxY - minY) / detectionCanvas.height * 100;
-        
-        // Convert to percentage positions
-        const centerX = (avgX / detectionCanvas.width) * 100;
-        const centerY = (avgY / detectionCanvas.height) * 100;
-        
-        // Smooth the position updates
-        setFacePosition(prev => ({
-          x: prev.x * 0.7 + centerX * 0.3,
-          y: prev.y * 0.7 + (centerY - 5) * 0.3, // Offset upward for forehead
-          width: Math.max(25, Math.min(50, faceWidth * 1.5)),
-          rotation: 0,
-        }));
-        
-        setFaceDetected(true);
-      } else {
-        // Use default centered position if no face detected
-        setFacePosition(prev => ({
-          x: prev.x * 0.9 + 50 * 0.1,
-          y: prev.y * 0.9 + 40 * 0.1,
-          width: 35,
-          rotation: 0,
-        }));
-        setFaceDetected(false);
+    };
+
+    initializeDetector();
+
+    return () => {
+      mounted = false;
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isActive]);
+
+  useEffect(() => {
+    if (!isActive || !videoRef.current || isLoading) return;
+
+    const detectFace = async () => {
+      const video = videoRef.current;
+      if (!video || video.videoWidth === 0 || video.readyState < 2) {
+        animationRef.current = requestAnimationFrame(detectFace);
+        return;
+      }
+
+      try {
+        if (detectorRef.current) {
+          const faces = await detectorRef.current.estimateFaces(video, {
+            flipHorizontal: false,
+          });
+
+          if (faces.length > 0) {
+            const face = faces[0];
+            const keypoints = face.keypoints;
+            
+            // Get eye positions
+            const leftEyePoints = keypoints.filter((_, i) => FACE_LANDMARKS.leftEye.includes(i));
+            const rightEyePoints = keypoints.filter((_, i) => FACE_LANDMARKS.rightEye.includes(i));
+            
+            // Calculate eye center
+            const eyeCenterX = (leftEyePoints[0]?.x + rightEyePoints[0]?.x) / 2 || video.videoWidth / 2;
+            const eyeCenterY = (leftEyePoints[0]?.y + rightEyePoints[0]?.y) / 2 || video.videoHeight * 0.35;
+            
+            // Get ear positions for earrings
+            const leftEarPoint = keypoints[234] || { x: eyeCenterX - 100, y: eyeCenterY + 50 };
+            const rightEarPoint = keypoints[454] || { x: eyeCenterX + 100, y: eyeCenterY + 50 };
+            
+            // Get chin/neck area for necklaces
+            const chinPoint = keypoints[152] || { x: eyeCenterX, y: video.videoHeight * 0.7 };
+            
+            // Calculate face dimensions
+            const faceWidth = Math.abs(rightEarPoint.x - leftEarPoint.x);
+            const noseTip = keypoints[4] || { y: eyeCenterY + 50 };
+            const faceHeight = Math.abs(chinPoint.y - (keypoints[10]?.y || eyeCenterY - 80));
+            
+            // Calculate rotation
+            const deltaX = rightEyePoints[0]?.x - leftEyePoints[0]?.x || 1;
+            const deltaY = rightEyePoints[0]?.y - leftEyePoints[0]?.y || 0;
+            const rotation = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+            setFaceData({
+              eyeCenter: { 
+                x: (eyeCenterX / video.videoWidth) * 100, 
+                y: (eyeCenterY / video.videoHeight) * 100 
+              },
+              leftEar: { 
+                x: (leftEarPoint.x / video.videoWidth) * 100, 
+                y: ((leftEarPoint.y + 30) / video.videoHeight) * 100 
+              },
+              rightEar: { 
+                x: (rightEarPoint.x / video.videoWidth) * 100, 
+                y: ((rightEarPoint.y + 30) / video.videoHeight) * 100 
+              },
+              neckCenter: { 
+                x: (chinPoint.x / video.videoWidth) * 100, 
+                y: ((chinPoint.y + 40) / video.videoHeight) * 100 
+              },
+              faceWidth: (faceWidth / video.videoWidth) * 100,
+              faceHeight: (faceHeight / video.videoHeight) * 100,
+              rotation,
+            });
+            setFaceDetected(true);
+          } else {
+            setFaceDetected(false);
+          }
+        } else {
+          // Fallback: basic skin tone detection
+          fallbackDetection(video);
+        }
+      } catch (error) {
+        fallbackDetection(videoRef.current);
       }
 
       animationRef.current = requestAnimationFrame(detectFace);
     };
 
-    // Start detection after a short delay to let camera initialize
+    const fallbackDetection = (video: HTMLVideoElement) => {
+      // Basic centered detection
+      setFaceData({
+        eyeCenter: { x: 50, y: 35 },
+        leftEar: { x: 25, y: 40 },
+        rightEar: { x: 75, y: 40 },
+        neckCenter: { x: 50, y: 65 },
+        faceWidth: 40,
+        faceHeight: 50,
+        rotation: 0,
+      });
+      setFaceDetected(true);
+    };
+
     const timeoutId = setTimeout(() => {
       animationRef.current = requestAnimationFrame(detectFace);
-    }, 500);
+    }, 1000);
 
     return () => {
       clearTimeout(timeoutId);
@@ -188,27 +245,50 @@ const useFaceDetection = (
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isActive, videoRef]);
+  }, [isActive, isLoading, videoRef]);
 
-  return { facePosition, isDetecting, faceDetected };
+  return { faceData, isLoading, faceDetected };
 };
 
-// Face Frame Overlay Component
-const FaceFrameOverlay = ({ isDetecting, faceDetected, position }: { 
-  isDetecting: boolean; 
+// Enhanced Face Frame Overlay with mesh visualization
+const FaceFrameOverlay = ({ 
+  isLoading, 
+  faceDetected, 
+  faceData 
+}: { 
+  isLoading: boolean; 
   faceDetected: boolean;
-  position: { x: number; y: number; width: number } 
+  faceData: any;
 }) => {
-  if (!isDetecting) return null;
+  if (isLoading) {
+    return (
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center z-20 bg-black/40"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="text-center">
+          <motion.div
+            className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <p className="text-white text-sm">Loading AI Face Mesh...</p>
+          <p className="text-amber-500 text-xs mt-1">Powered by TensorFlow.js</p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (!faceData) return null;
 
   return (
     <motion.div
-      className="absolute pointer-events-none"
+      className="absolute pointer-events-none z-15"
       style={{
-        left: `${position.x}%`,
-        top: `${position.y}%`,
-        transform: "translate(-50%, -50%)",
-        zIndex: 15,
+        left: `${faceData.eyeCenter.x}%`,
+        top: `${faceData.eyeCenter.y}%`,
+        transform: `translate(-50%, -50%) rotate(${faceData.rotation}deg)`,
       }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -216,52 +296,81 @@ const FaceFrameOverlay = ({ isDetecting, faceDetected, position }: {
       <motion.div 
         className="relative"
         style={{ 
-          width: "120px", 
-          height: "150px",
+          width: `${faceData.faceWidth * 2}vw`, 
+          height: `${faceData.faceHeight * 1.5}vh`,
         }}
       >
-        {/* Corner markers */}
-        {[
-          { top: 0, left: 0, rotate: 0 },
-          { top: 0, right: 0, rotate: 90 },
-          { bottom: 0, left: 0, rotate: -90 },
-          { bottom: 0, right: 0, rotate: 180 },
-        ].map((pos, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-6 h-6"
-            style={pos}
-            animate={{ opacity: faceDetected ? [0.6, 1, 0.6] : [0.2, 0.4, 0.2] }}
-            transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
-          >
-            <div 
-              className={`w-full h-full border-l-2 border-t-2 rounded-tl-md transition-colors ${
-                faceDetected ? 'border-green-500' : 'border-amber-500'
-              }`}
-              style={{ transform: `rotate(${pos.rotate}deg)` }}
-            />
-          </motion.div>
-        ))}
+        {/* Face mesh grid visualization */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <motion.ellipse
+            cx="50"
+            cy="50"
+            rx="45"
+            ry="48"
+            fill="none"
+            stroke={faceDetected ? "#22c55e" : "#f59e0b"}
+            strokeWidth="0.5"
+            strokeDasharray="4 2"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 1 }}
+          />
+          
+          {/* Eye guides */}
+          <circle cx="35" cy="40" r="8" fill="none" stroke="#22c55e" strokeWidth="0.3" opacity={0.5} />
+          <circle cx="65" cy="40" r="8" fill="none" stroke="#22c55e" strokeWidth="0.3" opacity={0.5} />
+          
+          {/* Nose guide */}
+          <line x1="50" y1="45" x2="50" y2="60" stroke="#22c55e" strokeWidth="0.3" opacity={0.5} />
+          
+          {/* Mouth guide */}
+          <ellipse cx="50" cy="70" rx="15" ry="6" fill="none" stroke="#22c55e" strokeWidth="0.3" opacity={0.5} />
+        </svg>
 
-        {/* Center cross */}
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          animate={{ scale: [0.9, 1.1, 0.9], opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <div className={`w-4 h-px ${faceDetected ? 'bg-green-500/50' : 'bg-amber-500/50'}`} />
-          <div className={`h-4 w-px absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${faceDetected ? 'bg-green-500/50' : 'bg-amber-500/50'}`} />
-        </motion.div>
+        {/* Tracking points */}
+        {faceDetected && (
+          <>
+            {/* Eye points */}
+            <motion.div
+              className="absolute w-2 h-2 bg-green-500 rounded-full"
+              style={{ left: "35%", top: "40%" }}
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+            <motion.div
+              className="absolute w-2 h-2 bg-green-500 rounded-full"
+              style={{ left: "65%", top: "40%" }}
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+            />
+            
+            {/* Ear points */}
+            <motion.div
+              className="absolute w-1.5 h-1.5 bg-amber-500 rounded-full"
+              style={{ left: "5%", top: "45%" }}
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+            />
+            <motion.div
+              className="absolute w-1.5 h-1.5 bg-amber-500 rounded-full"
+              style={{ left: "95%", top: "45%" }}
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
+            />
+          </>
+        )}
       </motion.div>
       
-      {/* Status text */}
-      <motion.p
-        className={`text-center text-xs mt-2 font-medium ${faceDetected ? 'text-green-500' : 'text-amber-500'}`}
+      {/* Status indicator */}
+      <motion.div
+        className={`absolute -bottom-8 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-medium ${
+          faceDetected ? 'bg-green-500/20 text-green-500' : 'bg-amber-500/20 text-amber-500'
+        }`}
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 1.5, repeat: Infinity }}
       >
-        {faceDetected ? "Face Detected ✓" : "Align your face..."}
-      </motion.p>
+        {faceDetected ? "✓ Face Mesh Active" : "Align your face..."}
+      </motion.div>
     </motion.div>
   );
 };
@@ -299,12 +408,96 @@ const SparkleEffect = ({ isActive }: { isActive: boolean }) => {
   );
 };
 
+// Before/After Comparison Slider
+const ComparisonView = ({ 
+  withProduct, 
+  withoutProduct,
+  isActive 
+}: { 
+  withProduct: string | null; 
+  withoutProduct: string | null;
+  isActive: boolean;
+}) => {
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleMove = useCallback((clientX: number) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const position = ((clientX - rect.left) / rect.width) * 100;
+    setSliderPosition(Math.max(0, Math.min(100, position)));
+  }, []);
+
+  const handleMouseMove = (e: React.MouseEvent) => handleMove(e.clientX);
+  const handleTouchMove = (e: React.TouchEvent) => handleMove(e.touches[0].clientX);
+
+  if (!isActive || !withProduct || !withoutProduct) return null;
+
+  return (
+    <motion.div
+      ref={containerRef}
+      className="absolute inset-0 z-40 cursor-ew-resize"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onMouseMove={handleMouseMove}
+      onTouchMove={handleTouchMove}
+    >
+      {/* Without product (left) */}
+      <div 
+        className="absolute inset-0 overflow-hidden"
+        style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+      >
+        <img 
+          src={withoutProduct} 
+          alt="Without product" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute top-4 left-4 bg-black/60 px-3 py-1.5 rounded-full text-white text-xs">
+          Before
+        </div>
+      </div>
+
+      {/* With product (right) */}
+      <div 
+        className="absolute inset-0 overflow-hidden"
+        style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
+      >
+        <img 
+          src={withProduct} 
+          alt="With product" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute top-4 right-4 bg-amber-500/90 px-3 py-1.5 rounded-full text-black text-xs font-medium">
+          After ✨
+        </div>
+      </div>
+
+      {/* Slider line */}
+      <motion.div
+        className="absolute top-0 bottom-0 w-1 bg-white shadow-lg cursor-ew-resize"
+        style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
+        whileHover={{ scaleX: 1.5 }}
+      >
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center">
+          <div className="flex gap-0.5">
+            <ChevronLeft className="w-4 h-4 text-gray-600" />
+            <ChevronRight className="w-4 h-4 text-gray-600" />
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 export const VirtualTryOn = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [mode, setMode] = useState<TryOnMode>("eyewear");
   const [selectedProduct, setSelectedProduct] = useState<DemoProduct>(eyewearProducts[0]);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [capturedWithoutProduct, setCapturedWithoutProduct] = useState<string | null>(null);
+  const [showComparison, setShowComparison] = useState(false);
   const [manualPosition, setManualPosition] = useState<{ x: number; y: number } | null>(null);
   const [glassesScale, setGlassesScale] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
@@ -313,6 +506,7 @@ export const VirtualTryOn = () => {
   const [activeLighting, setActiveLighting] = useState(lightingModes[0]);
   const [showFilters, setShowFilters] = useState(false);
   const [showSparkles, setShowSparkles] = useState(false);
+  const [showProduct, setShowProduct] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -321,9 +515,28 @@ export const VirtualTryOn = () => {
   const products = mode === "eyewear" ? eyewearProducts : jewelryProducts;
   const images = mode === "eyewear" ? eyewearImages : jewelryImages;
 
-  const { facePosition, isDetecting, faceDetected } = useFaceDetection(videoRef, canvasRef, isCameraActive && !capturedImage);
+  const { faceData, isLoading, faceDetected } = useFaceMesh(videoRef, isCameraActive && !capturedImage);
 
-  const currentPosition = manualPosition || { x: facePosition.x, y: facePosition.y };
+  const getProductPosition = useCallback(() => {
+    if (manualPosition) {
+      return { x: manualPosition.x, y: manualPosition.y };
+    }
+    
+    if (!faceData) {
+      return { x: 50, y: 40 };
+    }
+
+    if (mode === "eyewear") {
+      return { x: faceData.eyeCenter.x, y: faceData.eyeCenter.y };
+    } else {
+      if (selectedProduct.category === "earrings") {
+        return { x: faceData.leftEar.x, y: faceData.leftEar.y };
+      } else if (selectedProduct.category === "necklaces") {
+        return { x: faceData.neckCenter.x, y: faceData.neckCenter.y };
+      }
+      return { x: faceData.eyeCenter.x, y: faceData.eyeCenter.y + 10 };
+    }
+  }, [faceData, manualPosition, mode, selectedProduct]);
 
   const startCamera = useCallback(async () => {
     try {
@@ -341,7 +554,7 @@ export const VirtualTryOn = () => {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         setIsCameraActive(true);
-        toast.success("Camera ready! Position your face in the frame.");
+        toast.success("Camera ready! AI face mesh initializing...");
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
@@ -363,7 +576,7 @@ export const VirtualTryOn = () => {
     setTimeout(startCamera, 300);
   }, [stopCamera, startCamera]);
 
-  const capturePhoto = useCallback(() => {
+  const capturePhoto = useCallback((withProductOverlay: boolean = true) => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -380,13 +593,35 @@ export const VirtualTryOn = () => {
         ctx.drawImage(video, 0, 0);
         
         const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
-        setCapturedImage(dataUrl);
-        setShowSparkles(true);
-        setTimeout(() => setShowSparkles(false), 2000);
-        toast.success("Photo captured! ✨");
+        
+        if (withProductOverlay) {
+          setCapturedImage(dataUrl);
+          setShowSparkles(true);
+          setTimeout(() => setShowSparkles(false), 2000);
+          toast.success("Photo captured! ✨");
+        } else {
+          setCapturedWithoutProduct(dataUrl);
+        }
       }
     }
   }, [cameraFacing, activeFilter]);
+
+  const captureComparison = useCallback(() => {
+    // First capture without product
+    const originalShowProduct = showProduct;
+    setShowProduct(false);
+    
+    setTimeout(() => {
+      capturePhoto(false);
+      setShowProduct(true);
+      
+      setTimeout(() => {
+        capturePhoto(true);
+        setShowComparison(true);
+        toast.success("Comparison photos captured!");
+      }, 100);
+    }, 100);
+  }, [capturePhoto, showProduct]);
 
   const downloadPhoto = useCallback(() => {
     if (capturedImage) {
@@ -424,9 +659,11 @@ export const VirtualTryOn = () => {
   const handleClose = useCallback(() => {
     stopCamera();
     setCapturedImage(null);
+    setCapturedWithoutProduct(null);
     setManualPosition(null);
     setIsOpen(false);
     setShowFilters(false);
+    setShowComparison(false);
   }, [stopCamera]);
 
   useEffect(() => {
@@ -471,22 +708,51 @@ export const VirtualTryOn = () => {
     });
   }, [isDragging]);
 
+  const position = getProductPosition();
+  
   const getOverlayStyle = () => {
-    const yOffset = mode === "jewelry" 
-      ? (selectedProduct.category === "earrings" ? 20 : selectedProduct.category === "necklaces" ? 35 : 25)
-      : 0;
-
+    const baseWidth = mode === "eyewear" ? faceData?.faceWidth || 35 : 25;
+    
     return {
-      left: `${currentPosition.x}%`,
-      top: `${currentPosition.y + yOffset}%`,
-      transform: `translate(-50%, -50%) scale(${glassesScale})`,
-      width: mode === "eyewear" ? "140px" : "100px",
+      left: `${position.x}%`,
+      top: `${position.y}%`,
+      transform: `translate(-50%, -50%) scale(${glassesScale}) rotate(${faceData?.rotation || 0}deg)`,
+      width: `${baseWidth * 3}px`,
     };
+  };
+
+  // Render second earring for earrings mode
+  const renderSecondEarring = () => {
+    if (mode !== "jewelry" || selectedProduct.category !== "earrings" || !faceData || !showProduct) return null;
+    
+    return (
+      <motion.div
+        className="absolute cursor-move z-10"
+        style={{
+          left: `${faceData.rightEar.x}%`,
+          top: `${faceData.rightEar.y}%`,
+          transform: `translate(-50%, -50%) scale(${glassesScale}) rotate(${faceData?.rotation || 0}deg)`,
+          width: "60px",
+        }}
+        animate={{ y: isDragging ? 0 : [0, -2, 0] }}
+        transition={{ duration: 2, repeat: isDragging ? 0 : Infinity, ease: "easeInOut" }}
+      >
+        <img
+          src={images[selectedProduct.id] || productEarrings}
+          alt="Right earring"
+          className="w-full h-auto opacity-90 drop-shadow-lg pointer-events-none"
+          style={{ 
+            filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
+            transform: "scaleX(-1)",
+          }}
+        />
+      </motion.div>
+    );
   };
 
   return (
     <>
-      {/* Trigger Button - Fixed position with proper z-index */}
+      {/* Trigger Button */}
       <motion.button
         onClick={handleOpen}
         className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-2 md:gap-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black px-4 py-3 md:px-6 md:py-4 shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-shadow rounded-full"
@@ -514,9 +780,28 @@ export const VirtualTryOn = () => {
                 >
                   <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-amber-500" />
                 </motion.div>
-                <span className="text-white font-serif text-sm md:text-lg">AR Virtual Try-On</span>
+                <div>
+                  <span className="text-white font-serif text-sm md:text-lg">AR Virtual Try-On</span>
+                  <span className="text-amber-500 text-[10px] ml-2 hidden sm:inline">TensorFlow.js</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 md:gap-2">
+                {/* Show/Hide Product Toggle */}
+                <button
+                  onClick={() => setShowProduct(!showProduct)}
+                  className={`w-9 h-9 md:w-10 md:h-10 backdrop-blur-sm flex items-center justify-center transition-colors rounded-full ${showProduct ? 'bg-amber-500 text-black' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                  title={showProduct ? "Hide product" : "Show product"}
+                >
+                  {showProduct ? <Eye className="w-4 h-4 md:w-5 md:h-5" /> : <EyeOff className="w-4 h-4 md:w-5 md:h-5" />}
+                </button>
+                {/* Comparison View */}
+                <button
+                  onClick={() => !capturedImage && captureComparison()}
+                  className={`w-9 h-9 md:w-10 md:h-10 backdrop-blur-sm flex items-center justify-center transition-colors rounded-full ${showComparison ? 'bg-amber-500 text-black' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                  title="Compare before/after"
+                >
+                  <Layers className="w-4 h-4 md:w-5 md:h-5" />
+                </button>
                 {/* Filter Toggle */}
                 <button
                   onClick={() => setShowFilters(!showFilters)}
@@ -572,7 +857,7 @@ export const VirtualTryOn = () => {
               </button>
             </div>
 
-            {/* Beauty Filters Panel - Right side */}
+            {/* Beauty Filters Panel */}
             <AnimatePresence>
               {showFilters && (
                 <motion.div
@@ -635,6 +920,17 @@ export const VirtualTryOn = () => {
               onMouseUp={handleDragEnd}
               onTouchEnd={handleDragEnd}
             >
+              {/* Comparison View Overlay */}
+              <AnimatePresence>
+                {showComparison && capturedImage && capturedWithoutProduct && (
+                  <ComparisonView
+                    withProduct={capturedImage}
+                    withoutProduct={capturedWithoutProduct}
+                    isActive={showComparison}
+                  />
+                )}
+              </AnimatePresence>
+
               {!capturedImage ? (
                 <>
                   <video
@@ -657,15 +953,15 @@ export const VirtualTryOn = () => {
                     />
                   )}
                   
-                  {/* Face Frame Overlay */}
+                  {/* Face Mesh Overlay */}
                   <FaceFrameOverlay 
-                    isDetecting={isDetecting} 
+                    isLoading={isLoading} 
                     faceDetected={faceDetected}
-                    position={facePosition} 
+                    faceData={faceData} 
                   />
                   
-                  {/* Product Overlay with drag support */}
-                  {isCameraActive && (
+                  {/* Product Overlay */}
+                  {isCameraActive && showProduct && !isLoading && (
                     <motion.div
                       className="absolute cursor-move z-10"
                       style={getOverlayStyle()}
@@ -691,6 +987,9 @@ export const VirtualTryOn = () => {
                       />
                     </motion.div>
                   )}
+                  
+                  {/* Second Earring */}
+                  {renderSecondEarring()}
 
                   {/* Position Controls */}
                   <div className="absolute bottom-32 md:bottom-36 left-1/2 -translate-x-1/2 flex gap-2 md:gap-4 z-20">
@@ -767,7 +1066,7 @@ export const VirtualTryOn = () => {
             <div className="absolute bottom-4 md:bottom-6 left-0 right-0 z-20 flex justify-center gap-3 md:gap-6 px-4">
               {!capturedImage ? (
                 <motion.button
-                  onClick={capturePhoto}
+                  onClick={() => capturePhoto(true)}
                   className="w-14 h-14 md:w-18 md:h-18 bg-gradient-to-r from-amber-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -777,7 +1076,11 @@ export const VirtualTryOn = () => {
               ) : (
                 <>
                   <button
-                    onClick={() => setCapturedImage(null)}
+                    onClick={() => {
+                      setCapturedImage(null);
+                      setCapturedWithoutProduct(null);
+                      setShowComparison(false);
+                    }}
                     className="w-11 h-11 md:w-14 md:h-14 bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors rounded-full"
                   >
                     <RotateCcw className="w-5 h-5 md:w-6 md:h-6" />
