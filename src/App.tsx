@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/animations/LoadingScreen";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { VirtualTryOn } from "@/components/tryon/VirtualTryOn";
+import { OakAshChatbot } from "@/components/chatbot/OakAshChatbot";
 import { useState, useEffect, useRef } from "react";
 import Index from "./pages/Index";
 import Jewellery from "./pages/Jewellery";
@@ -63,6 +64,8 @@ const AnimatedRoutes = () => {
       <ScrollToTop />
       {/* Virtual Try-On available on all pages */}
       <VirtualTryOn />
+      {/* OAK & ASH Chatbot available on all pages */}
+      <OakAshChatbot />
       
       {isLoading && (
         <LoadingScreen onComplete={handleLoadingComplete} isNavigation={isNavigation} />

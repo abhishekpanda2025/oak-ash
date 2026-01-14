@@ -1,5 +1,5 @@
 import { useRef, useEffect, ReactNode } from "react";
-import { motion, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, useMotionValue, useInView } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -21,7 +21,6 @@ const StackingCard = ({ children, index, totalCards }: StackingCardProps) => {
     const startOffset = index * 100;
     const endOffset = (totalCards - index - 1) * 100;
     
-    // Create the stacking animation with enhanced effects
     gsap.to(card, {
       scrollTrigger: {
         trigger: card,
@@ -87,7 +86,7 @@ export const StackingCardsContainer = ({ children, className = "" }: StackingCar
   );
 };
 
-// Enhanced Smooth stacking with intensive 3D effects
+// Premium Smooth stacking with intensive 3D effects
 interface SmoothStackingCardProps {
   children: ReactNode;
   index: number;
@@ -97,61 +96,66 @@ interface SmoothStackingCardProps {
 export const SmoothStackingCard = ({ children, index, totalCards }: SmoothStackingCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(cardRef, { once: false, margin: "-10%" });
   
   const { scrollYProgress } = useScroll({
     target: cardRef,
     offset: ["start end", "end start"],
   });
   
-  // More intensive transforms
-  const stackProgress = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 0, 0.5, 1]);
-  const scale = useTransform(stackProgress, [0, 1], [1, 0.92 - index * 0.01]);
-  const y = useTransform(stackProgress, [0, 1], [0, index * 25]);
-  const brightness = useTransform(stackProgress, [0, 1], [1, 0.85 - index * 0.02]);
-  const rotateX = useTransform(scrollYProgress, [0, 0.2, 0.5, 0.8, 1], [8, 3, 0, -2, -5]);
-  const rotateY = useTransform(scrollYProgress, [0, 0.5, 1], [2, 0, -2]);
-  const translateZ = useTransform(scrollYProgress, [0, 0.5, 1], [-100, 0, -50]);
+  // Premium transforms with smoother curves
+  const stackProgress = useTransform(scrollYProgress, [0, 0.2, 0.5, 0.8, 1], [0, 0, 0.3, 0.7, 1]);
+  const scale = useTransform(stackProgress, [0, 1], [1, 0.94 - index * 0.008]);
+  const y = useTransform(stackProgress, [0, 1], [0, index * 15]);
+  const brightness = useTransform(stackProgress, [0, 1], [1, 0.88 - index * 0.015]);
   
-  // Shadow intensity based on scroll
-  const shadowOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.1, 0.4, 0.2]);
-  const shadowBlur = useTransform(scrollYProgress, [0, 0.5, 1], [10, 60, 30]);
-  const shadowY = useTransform(scrollYProgress, [0, 0.5, 1], [5, 40, 20]);
+  // 3D rotation effects
+  const rotateX = useTransform(scrollYProgress, [0, 0.15, 0.4, 0.6, 0.85, 1], [6, 2, 0, 0, -1, -3]);
+  const rotateY = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [1.5, 0, 0, -1.5]);
+  const translateZ = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [-80, 0, 0, -40]);
   
-  // Glow effect
-  const glowOpacity = useTransform(scrollYProgress, [0.3, 0.5, 0.7], [0, 0.3, 0]);
+  // Enhanced shadow based on scroll
+  const shadowOpacity = useTransform(scrollYProgress, [0, 0.4, 0.6, 1], [0.05, 0.35, 0.35, 0.15]);
+  const shadowBlur = useTransform(scrollYProgress, [0, 0.4, 0.6, 1], [8, 50, 50, 25]);
+  const shadowY = useTransform(scrollYProgress, [0, 0.4, 0.6, 1], [4, 35, 35, 18]);
   
-  const smoothScale = useSpring(scale, { stiffness: 80, damping: 25 });
-  const smoothY = useSpring(y, { stiffness: 80, damping: 25 });
-  const smoothRotateX = useSpring(rotateX, { stiffness: 60, damping: 20 });
-  const smoothRotateY = useSpring(rotateY, { stiffness: 60, damping: 20 });
-  const smoothTranslateZ = useSpring(translateZ, { stiffness: 60, damping: 20 });
+  // Glow effects
+  const glowOpacity = useTransform(scrollYProgress, [0.25, 0.4, 0.6, 0.75], [0, 0.25, 0.25, 0]);
+  const edgeGlowOpacity = useTransform(scrollYProgress, [0.3, 0.5, 0.7], [0, 0.6, 0]);
+  
+  // Ultra smooth spring physics
+  const springConfig = { stiffness: 60, damping: 25, mass: 0.8 };
+  const smoothScale = useSpring(scale, springConfig);
+  const smoothY = useSpring(y, springConfig);
+  const smoothRotateX = useSpring(rotateX, { stiffness: 50, damping: 22 });
+  const smoothRotateY = useSpring(rotateY, { stiffness: 50, damping: 22 });
+  const smoothTranslateZ = useSpring(translateZ, { stiffness: 50, damping: 22 });
 
   // Parallax for inner content
-  const contentY = useTransform(scrollYProgress, [0, 1], [50, -50]);
-  const smoothContentY = useSpring(contentY, { stiffness: 100, damping: 30 });
+  const contentY = useTransform(scrollYProgress, [0, 1], [40, -40]);
+  const smoothContentY = useSpring(contentY, { stiffness: 80, damping: 25 });
 
   useEffect(() => {
     const card = cardRef.current;
     const glow = glowRef.current;
     if (!card || !glow) return;
 
-    // GSAP enhanced effects
     const ctx = gsap.context(() => {
-      // Card entrance animation
+      // Premium entrance animation
       gsap.fromTo(
         card,
         {
           opacity: 0,
-          y: 150,
-          rotateX: 15,
-          scale: 0.9,
+          y: 120,
+          rotateX: 12,
+          scale: 0.92,
         },
         {
           scrollTrigger: {
             trigger: card,
-            start: "top 90%",
-            end: "top 60%",
-            scrub: 0.5,
+            start: "top 92%",
+            end: "top 55%",
+            scrub: 0.8,
           },
           opacity: 1,
           y: 0,
@@ -161,16 +165,16 @@ export const SmoothStackingCard = ({ children, index, totalCards }: SmoothStacki
         }
       );
 
-      // Stacking shadow effect
+      // Premium stacking shadow effect
       gsap.to(card, {
         scrollTrigger: {
           trigger: card,
-          start: "top center",
-          end: "bottom center",
+          start: "top 60%",
+          end: "bottom 40%",
           scrub: true,
         },
-        boxShadow: `0 ${20 + index * 5}px ${40 + index * 10}px -10px rgba(212, 184, 106, ${0.15 + index * 0.05})`,
-        ease: "none",
+        boxShadow: `0 ${25 + index * 8}px ${50 + index * 15}px -12px rgba(212, 184, 106, ${0.12 + index * 0.04})`,
+        ease: "power2.inOut",
       });
     }, card);
 
@@ -188,71 +192,91 @@ export const SmoothStackingCard = ({ children, index, totalCards }: SmoothStacki
         rotateX: smoothRotateX,
         rotateY: smoothRotateY,
         z: smoothTranslateZ,
-        transformPerspective: 1500,
+        transformPerspective: 1800,
         transformOrigin: "center top",
         filter: useTransform(brightness, (v) => `brightness(${v})`),
       }}
     >
-      {/* Ambient glow effect */}
+      {/* Premium ambient glow */}
       <motion.div
         ref={glowRef}
-        className="absolute -inset-4 bg-gradient-to-b from-amber-500/20 via-transparent to-amber-500/10 rounded-3xl blur-xl pointer-events-none"
+        className="absolute -inset-6 bg-gradient-to-b from-amber-500/15 via-amber-400/5 to-amber-500/10 rounded-3xl blur-2xl pointer-events-none"
         style={{ opacity: glowOpacity }}
       />
       
-      {/* Card shadow layer */}
+      {/* Dynamic shadow layer */}
       <motion.div
-        className="absolute inset-0 bg-black/20 rounded-2xl pointer-events-none"
+        className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/25 rounded-2xl pointer-events-none"
         style={{
           opacity: shadowOpacity,
           filter: useTransform(shadowBlur, (b) => `blur(${b}px)`),
-          transform: useTransform(shadowY, (y) => `translateY(${y}px)`),
+          transform: useTransform(shadowY, (y) => `translateY(${y}px) scaleX(0.95)`),
         }}
       />
       
-      {/* Main card content */}
+      {/* Main card content with premium feel */}
       <motion.div
-        className="relative overflow-hidden"
+        className="relative overflow-hidden rounded-lg"
         style={{ y: smoothContentY }}
       >
         <motion.div
-          initial={{ opacity: 0, y: 80, rotateX: 10 }}
+          initial={{ opacity: 0, y: 60, rotateX: 8 }}
           whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: true, margin: "-80px" }}
           transition={{ 
-            duration: 0.9, 
-            delay: index * 0.12,
+            duration: 1, 
+            delay: index * 0.1,
             ease: [0.25, 0.1, 0.25, 1]
           }}
         >
-          {/* Edge highlight */}
+          {/* Top edge highlight */}
           <motion.div
-            className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent"
-            style={{
-              opacity: useTransform(scrollYProgress, [0.4, 0.5, 0.6], [0, 1, 0])
-            }}
+            className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent z-10"
+            style={{ opacity: edgeGlowOpacity }}
+          />
+          
+          {/* Left edge glow */}
+          <motion.div
+            className="absolute top-0 bottom-0 left-0 w-px bg-gradient-to-b from-transparent via-amber-400/40 to-transparent z-10"
+            style={{ opacity: useTransform(edgeGlowOpacity, v => v * 0.5) }}
+          />
+          
+          {/* Right edge glow */}
+          <motion.div
+            className="absolute top-0 bottom-0 right-0 w-px bg-gradient-to-b from-transparent via-amber-400/40 to-transparent z-10"
+            style={{ opacity: useTransform(edgeGlowOpacity, v => v * 0.5) }}
           />
           
           {children}
           
-          {/* Bottom edge glow */}
+          {/* Bottom edge highlight */}
           <motion.div
-            className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent"
-            style={{
-              opacity: useTransform(scrollYProgress, [0.4, 0.5, 0.6], [0, 0.5, 0])
-            }}
+            className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent z-10"
+            style={{ opacity: useTransform(edgeGlowOpacity, v => v * 0.6) }}
           />
         </motion.div>
       </motion.div>
       
-      {/* Stacking indicator line */}
+      {/* Premium stacking indicator */}
       <motion.div
-        className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-32 h-0.5 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent rounded-full"
+        className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1"
         style={{
-          opacity: useTransform(stackProgress, [0, 0.5, 1], [0, 0.8, 0.3]),
-          scaleX: useTransform(stackProgress, [0, 0.5, 1], [0.5, 1, 0.8]),
+          opacity: useTransform(stackProgress, [0, 0.4, 0.7, 1], [0, 0.7, 0.7, 0.3]),
         }}
-      />
+      >
+        <motion.div 
+          className="w-8 h-0.5 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent rounded-full"
+          style={{ scaleX: useTransform(stackProgress, [0, 0.5, 1], [0.3, 1, 0.7]) }}
+        />
+        <motion.div 
+          className="w-1.5 h-1.5 bg-amber-500/40 rounded-full"
+          style={{ scale: useTransform(stackProgress, [0, 0.5, 1], [0.5, 1.2, 0.8]) }}
+        />
+        <motion.div 
+          className="w-8 h-0.5 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent rounded-full"
+          style={{ scaleX: useTransform(stackProgress, [0, 0.5, 1], [0.3, 1, 0.7]) }}
+        />
+      </motion.div>
     </motion.div>
   );
 };
@@ -264,7 +288,7 @@ interface SmoothStackingContainerProps {
 
 export const SmoothStackingContainer = ({ children, className = "" }: SmoothStackingContainerProps) => {
   return (
-    <div className={`relative ${className}`} style={{ perspective: "1500px", perspectiveOrigin: "50% 25%" }}>
+    <div className={`relative ${className}`} style={{ perspective: "2000px", perspectiveOrigin: "50% 20%" }}>
       {children.map((child, index) => (
         <SmoothStackingCard key={index} index={index} totalCards={children.length}>
           {child}
