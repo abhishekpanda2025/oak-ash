@@ -1,10 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
-import { Camera, X, RotateCcw, Download, Share2, Sparkles, ChevronLeft, ChevronRight, Move, ZoomIn, ZoomOut, Gem, Glasses, Heart, Star, Hand, CameraOff, Image } from "lucide-react";
+import { Camera, X, RotateCcw, Download, Share2, Sparkles, ChevronLeft, ChevronRight, Move, ZoomIn, ZoomOut, Gem, Glasses, Heart, Hand, Image } from "lucide-react";
 import { demoProducts, DemoProduct } from "@/data/demoProducts";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useLocalCartStore } from "@/stores/localCartStore";
+import { TryOnGallery, useTryOnGallery } from "./TryOnGallery";
 import * as tf from '@tensorflow/tfjs';
 import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
