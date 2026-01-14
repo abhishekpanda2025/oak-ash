@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { Play, Pause } from "lucide-react";
 import craftingVideo from "@/assets/crafting-video.mp4";
@@ -7,14 +7,7 @@ export const CraftingVideoSection = () => {
   const ref = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"]
-  });
-
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.9, 1, 1, 0.9]);
+  const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   useEffect(() => {
     if (videoRef.current) {
@@ -84,7 +77,9 @@ export const CraftingVideoSection = () => {
         {/* Video Container */}
         <motion.div
           className="relative max-w-5xl mx-auto"
-          style={{ opacity, scale }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.2 }}
         >
           {/* Decorative corners */}
           <div className="absolute -top-4 -left-4 w-16 h-16 border-l-2 border-t-2 border-amber-500/50 z-20" />

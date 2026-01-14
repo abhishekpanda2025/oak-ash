@@ -1,61 +1,63 @@
-import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring } from "framer-motion";
+import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
+
+// Import real product images
+import productNecklace from "@/assets/product-necklace.jpg";
+import productRing from "@/assets/product-ring.jpg";
+import productEarrings from "@/assets/product-earrings.jpg";
+import productBangle from "@/assets/product-bangle.jpg";
+import productPearlEarrings from "@/assets/product-pearl-earrings.jpg";
 
 const collections = [
   {
     name: "New In",
     description: "Fresh arrivals",
-    gradient: "from-rose-100 via-amber-50 to-rose-50",
-    icon: "✨",
+    image: productNecklace,
+    gradient: "from-rose-500/20 to-amber-500/20",
     href: "/collection/new-in",
-    depth: 1,
   },
   {
     name: "Gold",
     description: "Timeless luxury",
-    gradient: "from-amber-200 via-yellow-300 to-amber-400",
-    icon: "🌟",
+    image: productRing,
+    gradient: "from-amber-400/30 to-yellow-500/20",
     href: "/collection/gold",
-    depth: 2,
   },
   {
     name: "Silver",
     description: "Modern elegance",
-    gradient: "from-gray-200 via-slate-200 to-gray-300",
-    icon: "💫",
+    image: productEarrings,
+    gradient: "from-gray-300/30 to-slate-400/20",
     href: "/collection/silver",
-    depth: 1.5,
   },
   {
     name: "Two Tone",
     description: "Perfect harmony",
-    gradient: "from-amber-200 via-gray-200 to-yellow-200",
-    icon: "⚡",
+    image: productBangle,
+    gradient: "from-amber-400/20 via-gray-300/20 to-yellow-400/20",
     href: "/collection/two-tone",
-    depth: 2.5,
   },
   {
     name: "Pearls",
     description: "Classic beauty",
-    gradient: "from-rose-50 via-white to-pink-100",
-    icon: "🌙",
+    image: productPearlEarrings,
+    gradient: "from-rose-200/30 to-pink-300/20",
     href: "/collection/pearl",
-    depth: 1.8,
   },
 ];
 
-// Glassmorphism 3D Card component with parallax
-const Collection3DCard = ({ collection, index }: { collection: typeof collections[0]; index: number }) => {
+// Small Glassmorphism Icon Card
+const CollectionIconCard = ({ collection, index }: { collection: typeof collections[0]; index: number }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [12, -12]), { stiffness: 200, damping: 30 });
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-12, 12]), { stiffness: 200, damping: 30 });
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [8, -8]), { stiffness: 300, damping: 30 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-8, 8]), { stiffness: 300, damping: 30 });
   
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -76,18 +78,18 @@ const Collection3DCard = ({ collection, index }: { collection: typeof collection
     <motion.div
       ref={cardRef}
       className="relative group"
-      style={{ perspective: "800px" }}
+      style={{ perspective: "600px" }}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}
-      initial={{ opacity: 0, y: 80, rotateX: 35 }}
-      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.7, delay: index * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+      initial={{ opacity: 0, y: 40, scale: 0.9 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-30px" }}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
     >
       <Link to={collection.href} className="block">
         <motion.div
-          className="relative overflow-hidden aspect-[4/5] rounded-xl"
+          className="relative overflow-hidden w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl mx-auto"
           style={{
             rotateX,
             rotateY,
@@ -95,103 +97,61 @@ const Collection3DCard = ({ collection, index }: { collection: typeof collection
           }}
         >
           {/* Glassmorphism Background */}
-          <motion.div
-            className="absolute inset-0 backdrop-blur-md"
-            style={{
-              background: `linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 100%)`,
-              transform: `translateZ(${isHovered ? 15 : 0}px)`,
-              transition: "transform 0.3s ease-out",
-            }}
-          />
+          <div className="absolute inset-0 backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl" />
           
           {/* Gradient overlay */}
+          <div className={`absolute inset-0 bg-gradient-to-br ${collection.gradient} rounded-2xl`} />
+          
+          {/* Real Product Image */}
           <motion.div
-            className={`absolute inset-0 bg-gradient-to-br ${collection.gradient} opacity-60`}
+            className="absolute inset-2 rounded-xl overflow-hidden"
             style={{
-              transform: `translateZ(${isHovered ? 10 : 0}px)`,
+              transform: `translateZ(${isHovered ? 15 : 5}px)`,
               transition: "transform 0.3s ease-out",
             }}
-          />
-          
-          {/* Glass border effect */}
-          <div 
-            className="absolute inset-0 rounded-xl"
-            style={{
-              background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)",
-              padding: "1px",
-              WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-              WebkitMaskComposite: "xor",
-              maskComposite: "exclude",
-            }}
-          />
-          
-          {/* Depth layers for 3D effect */}
-          {[...Array(2)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute inset-0 border border-white/10 rounded-xl"
-              style={{
-                transform: `translateZ(${(i + 1) * 6}px) scale(${1 - (i + 1) * 0.015})`,
-              }}
-            />
-          ))}
-          
-          {/* Icon with 3D float */}
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center text-4xl md:text-5xl"
-            style={{
-              transform: `translateZ(${isHovered ? 50 : 25}px)`,
-              transition: "transform 0.4s ease-out",
-            }}
-            animate={isHovered ? {
-              y: [0, -8, 0],
-              rotateZ: [0, 5, -5, 0],
-            } : {}}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           >
-            {collection.icon}
+            <img
+              src={collection.image}
+              alt={collection.name}
+              className="w-full h-full object-cover rounded-xl"
+            />
+            {/* Image overlay for glass effect */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/10 rounded-xl" />
           </motion.div>
           
-          {/* Holographic shine effect */}
+          {/* Glass border shine effect */}
           <motion.div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"
+            className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             style={{
-              background: `linear-gradient(
-                ${isHovered ? 135 + (mouseX.get() * 90) : 135}deg,
-                transparent 0%,
-                rgba(255, 255, 255, 0.3) 25%,
-                rgba(212, 175, 55, 0.2) 50%,
-                rgba(255, 255, 255, 0.3) 75%,
-                transparent 100%
-              )`,
-              transform: `translateZ(35px)`,
+              background: `linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)`,
+              transform: "translateZ(20px)",
             }}
           />
           
-          {/* Sparkle particles */}
+          {/* Sparkle on hover */}
           {isHovered && (
             <motion.div
-              className="absolute inset-0 pointer-events-none rounded-xl overflow-hidden"
-              style={{ transform: "translateZ(60px)" }}
+              className="absolute inset-0 pointer-events-none rounded-2xl"
+              style={{ transform: "translateZ(25px)" }}
             >
-              {[...Array(4)].map((_, i) => (
+              {[...Array(3)].map((_, i) => (
                 <motion.div
                   key={i}
                   className="absolute w-1 h-1 bg-amber-400 rounded-full"
                   initial={{ 
-                    x: Math.random() * 100 + "%", 
+                    x: `${20 + Math.random() * 60}%`, 
                     y: "100%", 
                     opacity: 0,
                     scale: 0 
                   }}
                   animate={{ 
-                    y: "-10%", 
+                    y: "0%", 
                     opacity: [0, 1, 0],
-                    scale: [0, 1.2, 0] 
+                    scale: [0, 1, 0] 
                   }}
                   transition={{ 
-                    duration: 1.2, 
-                    delay: i * 0.15,
+                    duration: 0.8, 
+                    delay: i * 0.1,
                     repeat: Infinity,
                     ease: "easeOut" 
                   }}
@@ -200,42 +160,33 @@ const Collection3DCard = ({ collection, index }: { collection: typeof collection
             </motion.div>
           )}
           
-          {/* Inner glow effect */}
-          <motion.div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 rounded-xl"
-            style={{
-              boxShadow: "inset 0 0 40px rgba(212, 175, 55, 0.3)",
-              transform: "translateZ(40px)",
-            }}
-          />
-          
           {/* Outer glow on hover */}
           <motion.div
-            className="absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+            className="absolute -inset-1 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"
             style={{
-              background: "radial-gradient(circle at center, rgba(212, 175, 55, 0.15) 0%, transparent 70%)",
-              filter: "blur(8px)",
+              background: "radial-gradient(circle at center, rgba(212, 175, 55, 0.25) 0%, transparent 70%)",
+              filter: "blur(10px)",
             }}
           />
         </motion.div>
         
-        {/* Text with 3D effect */}
+        {/* Text */}
         <motion.div 
-          className="text-center mt-4"
+          className="text-center mt-3"
           style={{
-            transform: `perspective(800px) translateZ(${isHovered ? 8 : 0}px)`,
+            transform: `perspective(600px) translateZ(${isHovered ? 5 : 0}px)`,
             transition: "transform 0.3s ease-out",
           }}
         >
           <motion.h3 
-            className="font-serif text-base md:text-lg text-white group-hover:text-amber-400 transition-colors duration-300 mb-0.5"
-            animate={isHovered ? { y: -2 } : { y: 0 }}
+            className="font-serif text-xs sm:text-sm text-white group-hover:text-amber-400 transition-colors duration-300"
+            animate={isHovered ? { y: -1 } : { y: 0 }}
           >
             {collection.name}
           </motion.h3>
           <motion.p 
-            className="text-[10px] md:text-xs text-neutral-500 font-sans font-light"
-            animate={isHovered ? { opacity: 1 } : { opacity: 0.7 }}
+            className="text-[9px] sm:text-[10px] text-neutral-500 font-sans font-light mt-0.5"
+            animate={isHovered ? { opacity: 1 } : { opacity: 0.6 }}
           >
             {collection.description}
           </motion.p>
@@ -248,143 +199,82 @@ const Collection3DCard = ({ collection, index }: { collection: typeof collection
 export const CollectionShowcase = () => {
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
-  
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-  
-  // Parallax transforms for background
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const floatingY1 = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"]);
-  const floatingY2 = useTransform(scrollYProgress, [0, 1], ["0%", "-80%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.3, 1, 1, 0.3]);
 
   return (
-    <section ref={ref} className="relative section-padding bg-neutral-900 overflow-hidden">
-      {/* 3D Parallax Background */}
+    <section ref={ref} className="relative py-12 md:py-16 bg-neutral-900 overflow-hidden">
+      {/* Subtle Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Floating geometric shapes */}
         <motion.div
-          className="absolute w-[400px] h-[400px] md:w-[600px] md:h-[600px] -top-32 md:-top-48 -left-32 md:-left-48 rounded-full"
+          className="absolute w-[300px] h-[300px] -top-20 -left-20 rounded-full opacity-30"
           style={{
-            y: floatingY1,
             background: "radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%)",
           }}
         />
         <motion.div
-          className="absolute w-[300px] h-[300px] md:w-[400px] md:h-[400px] top-1/2 -right-20 md:-right-32 rounded-full"
+          className="absolute w-[200px] h-[200px] top-1/2 -right-10 rounded-full opacity-30"
           style={{
-            y: floatingY2,
             background: "radial-gradient(circle, rgba(212, 175, 55, 0.06) 0%, transparent 70%)",
           }}
         />
-        
-        {/* Grid perspective */}
-        <motion.div
-          className="absolute inset-0"
-          style={{
-            y: bgY,
-            opacity: 0.03,
-            backgroundImage: `
-              linear-gradient(rgba(212, 175, 55, 1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(212, 175, 55, 1) 1px, transparent 1px)
-            `,
-            backgroundSize: "60px 60px md:80px 80px",
-            transform: "perspective(500px) rotateX(60deg) translateY(-50%)",
-            transformOrigin: "center top",
-          }}
-        />
-        
-        {/* Floating particles */}
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-amber-500/30 rounded-full"
-            initial={{
-              x: `${Math.random() * 100}%`,
-              y: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [null, "-100%"],
-              opacity: [0, 1, 0],
-            }}
-            transition={{
-              duration: 8 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "linear",
-            }}
-          />
-        ))}
       </div>
 
-      <motion.div className="container-luxury relative z-10" style={{ opacity }}>
-        {/* Header with 3D depth */}
+      <div className="container-luxury relative z-10">
+        {/* Header */}
         <motion.div
-          className="flex flex-col md:flex-row md:items-end md:justify-between mb-10 md:mb-14 lg:mb-20"
-          initial={{ opacity: 0, y: 50, rotateX: -20 }}
-          animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
-          transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-          style={{ perspective: "1000px" }}
+          className="text-center mb-8 md:mb-10"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <div>
-            <motion.div
-              className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4"
-              initial={{ opacity: 0, x: -30 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
-              <p className="text-[10px] md:text-xs tracking-luxury uppercase text-amber-400 font-sans font-light">
-                Shop by Collection
-              </p>
-            </motion.div>
-            <motion.h2
-              className="font-serif text-2xl md:text-3xl lg:text-4xl xl:text-5xl text-white relative"
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <span className="relative">
-                Find Your Perfect Shade
-                {/* Glowing underline */}
-                <motion.span
-                  className="absolute -bottom-1 md:-bottom-2 left-0 h-px bg-gradient-to-r from-amber-500 via-amber-300 to-transparent"
-                  initial={{ width: 0 }}
-                  animate={isInView ? { width: "100%" } : {}}
-                  transition={{ duration: 1, delay: 0.5 }}
-                />
-              </span>
-            </motion.h2>
-          </div>
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex items-center justify-center gap-2 mb-3"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <Link
-              to="/jewellery"
-              className="group inline-flex items-center gap-2 text-[10px] md:text-xs tracking-wide uppercase font-sans mt-4 md:mt-0 text-neutral-400 hover:text-amber-400 transition-colors duration-300"
-            >
-              View All Collections
-              <motion.span
-                whileHover={{ x: 5 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              >
-                <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
-              </motion.span>
-            </Link>
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <p className="text-[10px] md:text-xs tracking-luxury uppercase text-amber-400 font-sans font-light">
+              Shop by Collection
+            </p>
           </motion.div>
+          <motion.h2
+            className="font-serif text-xl sm:text-2xl md:text-3xl text-white"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.15 }}
+          >
+            Find Your Perfect Shade
+          </motion.h2>
         </motion.div>
 
-        {/* Glassmorphism 3D Collection Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-5">
+        {/* Small Glassmorphism Icon Cards */}
+        <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10">
           {collections.map((collection, index) => (
-            <Collection3DCard key={collection.name} collection={collection} index={index} />
+            <CollectionIconCard key={collection.name} collection={collection} index={index} />
           ))}
         </div>
-      </motion.div>
+
+        {/* View All Link */}
+        <motion.div
+          className="text-center mt-8"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <Link
+            to="/jewellery"
+            className="group inline-flex items-center gap-2 text-[10px] md:text-xs tracking-wide uppercase font-sans text-neutral-400 hover:text-amber-400 transition-colors duration-300"
+          >
+            View All Collections
+            <motion.span
+              whileHover={{ x: 5 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            >
+              <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
+            </motion.span>
+          </Link>
+        </motion.div>
+      </div>
     </section>
   );
 };
