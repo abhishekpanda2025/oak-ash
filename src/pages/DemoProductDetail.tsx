@@ -15,7 +15,8 @@ import {
   ZoomIn,
   X,
   Package,
-  Gem
+  Gem,
+  Ruler
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -25,6 +26,7 @@ import { DemoProductCard } from "@/components/products/DemoProductCard";
 import { PageTransition, ScrollReveal } from "@/components/animations/PageTransition";
 import { getProductByHandle, demoProducts, DemoProduct } from "@/data/demoProducts";
 import { useLocalCartStore } from "@/stores/localCartStore";
+import { SizeRecommendation } from "@/components/products/SizeRecommendation";
 import { toast } from "sonner";
 
 // Import images
@@ -59,6 +61,7 @@ const DemoProductDetail = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const [selectedSize, setSelectedSize] = useState("M");
+  const [showSizeRecommendation, setShowSizeRecommendation] = useState(false);
   
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
@@ -381,12 +384,24 @@ const DemoProductDetail = () => {
                   </details>
                 </div>
 
-                {/* Size Selector (for rings) */}
-                {product.category === "rings" && (
+                {/* Size Selector (for rings, bracelets, necklaces) */}
+                {(product.category === "rings" || product.category === "bracelets" || product.category === "necklaces" || product.category === "bangles") && (
                   <div>
-                    <label className="text-xs tracking-widest uppercase text-muted-foreground mb-3 block font-sans">
-                      Select Size
-                    </label>
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="text-xs tracking-widest uppercase text-muted-foreground font-sans">
+                        Select Size
+                      </label>
+                      <motion.button
+                        onClick={() => setShowSizeRecommendation(true)}
+                        className="flex items-center gap-2 text-xs text-primary hover:text-primary/80 transition-colors font-sans"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <Ruler className="w-3 h-3" />
+                        <span>AI Size Finder</span>
+                        <Sparkles className="w-3 h-3" />
+                      </motion.button>
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {sizes.map((size) => (
                         <motion.button
@@ -406,6 +421,26 @@ const DemoProductDetail = () => {
                     </div>
                   </div>
                 )}
+                
+                {/* Size Recommendation Modal */}
+                <SizeRecommendation
+                  isOpen={showSizeRecommendation}
+                  onClose={() => setShowSizeRecommendation(false)}
+                  productType={
+                    product.category === "rings" ? "ring" :
+                    product.category === "bracelets" || product.category === "bangles" ? "bracelet" :
+                    product.category === "necklaces" ? "necklace" : "earrings"
+                  }
+                  onSizeSelect={(size) => {
+                    // Map AI size to available sizes
+                    const sizeMap: Record<string, string> = {
+                      "5": "XS", "6": "S", "7": "M", "8": "L", "9": "XL", "10": "XL",
+                      "S": "S", "M": "M", "L": "L", "XL": "XL",
+                      "Choker": "XS", "Princess": "S", "Matinee": "M", "Opera": "L", "Rope": "XL"
+                    };
+                    setSelectedSize(sizeMap[size] || "M");
+                  }}
+                />
 
                 {/* Quantity */}
                 <div>

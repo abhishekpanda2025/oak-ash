@@ -7,6 +7,7 @@ import { AnimatePresence } from "framer-motion";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/animations/LoadingScreen";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { VirtualTryOn } from "@/components/tryon/VirtualTryOn";
 import { useState, useEffect, useRef } from "react";
 import Index from "./pages/Index";
 import Jewellery from "./pages/Jewellery";
@@ -60,6 +61,9 @@ const AnimatedRoutes = () => {
   return (
     <>
       <ScrollToTop />
+      {/* Virtual Try-On available on all pages */}
+      <VirtualTryOn />
+      
       {isLoading && (
         <LoadingScreen onComplete={handleLoadingComplete} isNavigation={isNavigation} />
       )}
