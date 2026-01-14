@@ -1,11 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
-import { Camera, X, RotateCcw, Download, Share2, Sparkles, ChevronLeft, ChevronRight, Move, ZoomIn, ZoomOut, Gem, Glasses, Heart, Star, Wand2, Sun, Moon, Palette, Eye, EyeOff, Layers } from "lucide-react";
+import { Camera, X, RotateCcw, Download, Share2, Sparkles, ChevronLeft, ChevronRight, Move, ZoomIn, ZoomOut, Gem, Glasses, Heart, Star, Wand2, Sun, Moon, Palette, Eye, EyeOff, Layers, ShoppingBag, Hand } from "lucide-react";
 import { demoProducts, DemoProduct } from "@/data/demoProducts";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useLocalCartStore } from "@/stores/localCartStore";
 import * as tf from '@tensorflow/tfjs';
 import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
+import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
 
 // Import eyewear images for overlay
 import eyewearProduct1 from "@/assets/eyewear-product-1.jpg";
@@ -16,9 +18,11 @@ import eyewearProduct4 from "@/assets/eyewear-product-4.jpg";
 // Import jewelry images
 import productNecklace from "@/assets/product-necklace.jpg";
 import productEarrings from "@/assets/product-earrings.jpg";
+import productRing from "@/assets/product-ring.jpg";
 
 const eyewearProducts = demoProducts.filter(p => p.category === "eyewear");
 const jewelryProducts = demoProducts.filter(p => ["necklaces", "earrings", "rings"].includes(p.category));
+const ringProducts = demoProducts.filter(p => p.category === "rings");
 
 const eyewearImages: Record<string, string> = {
   "17": eyewearProduct1,
@@ -31,15 +35,19 @@ const eyewearImages: Record<string, string> = {
 const jewelryImages: Record<string, string> = {
   "1": productNecklace,
   "2": productEarrings,
+  "3": productRing,
   "5": productNecklace,
   "6": productEarrings,
+  "7": productRing,
   "8": productEarrings,
   "10": productNecklace,
+  "11": productRing,
   "13": productNecklace,
   "14": productEarrings,
+  "15": productRing,
 };
 
-type TryOnMode = "eyewear" | "jewelry";
+type TryOnMode = "eyewear" | "jewelry" | "rings";
 
 // AR Filters and Beauty Effects
 const beautyFilters = [
@@ -58,20 +66,164 @@ const lightingModes = [
   { id: "studio", name: "Studio", icon: Star, overlay: "rgba(255, 255, 255, 0.05)" },
 ];
 
-// Face mesh landmark indices
-const FACE_LANDMARKS = {
-  leftEye: [33, 133, 160, 159, 158, 144, 145, 153],
-  rightEye: [362, 263, 387, 386, 385, 373, 374, 380],
-  leftEar: [234, 93, 132, 58, 172],
-  rightEar: [454, 323, 361, 288, 397],
-  nose: [1, 4, 5, 195, 197],
-  noseTop: [6],
-  chin: [152, 377, 400, 378, 379, 365, 397, 288, 361, 323],
-  forehead: [10, 67, 109, 108, 69, 104, 68, 54],
-  leftCheek: [116, 123, 147, 187, 207, 206, 205, 36],
-  rightCheek: [345, 352, 376, 411, 427, 426, 425, 266],
-  lips: [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291],
-  neck: [152, 377, 400, 378, 379],
+// Hand landmarks for ring placement
+const FINGER_LANDMARKS = {
+  ringFinger: {
+    base: 13,
+    pip: 14, // Proximal interphalangeal joint
+    dip: 15, // Distal interphalangeal joint
+    tip: 16,
+  },
+  indexFinger: {
+    base: 5,
+    pip: 6,
+    dip: 7,
+    tip: 8,
+  },
+  middleFinger: {
+    base: 9,
+    pip: 10,
+    dip: 11,
+    tip: 12,
+  },
+};
+
+// TensorFlow.js Hand Pose Detection Hook
+const useHandPose = (
+  videoRef: React.RefObject<HTMLVideoElement>,
+  isActive: boolean,
+  selectedFinger: "ring" | "index" | "middle" = "ring"
+) => {
+  const [handData, setHandData] = useState<{
+    fingerPosition: { x: number; y: number };
+    fingerAngle: number;
+    fingerWidth: number;
+    isLeftHand: boolean;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [handDetected, setHandDetected] = useState(false);
+  const detectorRef = useRef<handPoseDetection.HandDetector | null>(null);
+  const animationRef = useRef<number>();
+
+  useEffect(() => {
+    let mounted = true;
+
+    const initializeDetector = async () => {
+      if (!isActive) return;
+      
+      try {
+        setIsLoading(true);
+        
+        await tf.ready();
+        await tf.setBackend('webgl');
+        
+        const model = handPoseDetection.SupportedModels.MediaPipeHands;
+        const detectorConfig = {
+          runtime: 'tfjs' as const,
+          maxHands: 2,
+          modelType: 'full' as const,
+        };
+        
+        detectorRef.current = await handPoseDetection.createDetector(model, detectorConfig);
+        
+        if (mounted) {
+          setIsLoading(false);
+          toast.success("Hand tracking ready! Show your hand.");
+        }
+      } catch (error) {
+        console.error("Error initializing hand pose:", error);
+        if (mounted) {
+          setIsLoading(false);
+          toast.info("Hand tracking unavailable, using manual placement");
+        }
+      }
+    };
+
+    initializeDetector();
+
+    return () => {
+      mounted = false;
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isActive]);
+
+  useEffect(() => {
+    if (!isActive || !videoRef.current || isLoading) return;
+
+    const detectHand = async () => {
+      const video = videoRef.current;
+      if (!video || video.videoWidth === 0 || video.readyState < 2) {
+        animationRef.current = requestAnimationFrame(detectHand);
+        return;
+      }
+
+      try {
+        if (detectorRef.current) {
+          const hands = await detectorRef.current.estimateHands(video, {
+            flipHorizontal: false,
+          });
+
+          if (hands.length > 0) {
+            const hand = hands[0];
+            const keypoints = hand.keypoints;
+            const fingerData = selectedFinger === "ring" ? FINGER_LANDMARKS.ringFinger :
+                             selectedFinger === "index" ? FINGER_LANDMARKS.indexFinger :
+                             FINGER_LANDMARKS.middleFinger;
+            
+            // Get the PIP joint position (middle of finger, where ring sits)
+            const pipPoint = keypoints[fingerData.pip];
+            const dipPoint = keypoints[fingerData.dip];
+            const basePoint = keypoints[fingerData.base];
+            
+            if (pipPoint && dipPoint && basePoint) {
+              // Calculate finger angle
+              const dx = dipPoint.x - basePoint.x;
+              const dy = dipPoint.y - basePoint.y;
+              const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+              
+              // Calculate finger width based on distance between joints
+              const fingerWidth = Math.sqrt(
+                Math.pow(dipPoint.x - pipPoint.x, 2) + 
+                Math.pow(dipPoint.y - pipPoint.y, 2)
+              );
+
+              setHandData({
+                fingerPosition: {
+                  x: (pipPoint.x / video.videoWidth) * 100,
+                  y: (pipPoint.y / video.videoHeight) * 100,
+                },
+                fingerAngle: angle,
+                fingerWidth: (fingerWidth / video.videoWidth) * 100,
+                isLeftHand: hand.handedness === "Left",
+              });
+              setHandDetected(true);
+            }
+          } else {
+            setHandDetected(false);
+          }
+        }
+      } catch (error) {
+        console.error("Hand detection error:", error);
+      }
+
+      animationRef.current = requestAnimationFrame(detectHand);
+    };
+
+    const timeoutId = setTimeout(() => {
+      animationRef.current = requestAnimationFrame(detectHand);
+    }, 500);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isActive, isLoading, videoRef, selectedFinger]);
+
+  return { handData, isLoading, handDetected };
 };
 
 // TensorFlow.js Face Mesh Detection Hook
@@ -102,11 +254,9 @@ const useFaceMesh = (
       try {
         setIsLoading(true);
         
-        // Initialize TensorFlow.js
         await tf.ready();
         await tf.setBackend('webgl');
         
-        // Create face landmarks detector
         const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
         const detectorConfig = {
           runtime: 'tfjs',
@@ -118,14 +268,11 @@ const useFaceMesh = (
         
         if (mounted) {
           setIsLoading(false);
-          toast.success("AI Face Mesh loaded! Position your face.");
         }
       } catch (error) {
         console.error("Error initializing face mesh:", error);
         if (mounted) {
           setIsLoading(false);
-          // Fallback to basic detection
-          toast.info("Using basic face detection");
         }
       }
     };
@@ -160,29 +307,18 @@ const useFaceMesh = (
             const face = faces[0];
             const keypoints = face.keypoints;
             
-            // Get eye positions
-            const leftEyePoints = keypoints.filter((_, i) => FACE_LANDMARKS.leftEye.includes(i));
-            const rightEyePoints = keypoints.filter((_, i) => FACE_LANDMARKS.rightEye.includes(i));
+            const eyeCenterX = (keypoints[33]?.x + keypoints[263]?.x) / 2 || video.videoWidth / 2;
+            const eyeCenterY = (keypoints[33]?.y + keypoints[263]?.y) / 2 || video.videoHeight * 0.35;
             
-            // Calculate eye center
-            const eyeCenterX = (leftEyePoints[0]?.x + rightEyePoints[0]?.x) / 2 || video.videoWidth / 2;
-            const eyeCenterY = (leftEyePoints[0]?.y + rightEyePoints[0]?.y) / 2 || video.videoHeight * 0.35;
-            
-            // Get ear positions for earrings
             const leftEarPoint = keypoints[234] || { x: eyeCenterX - 100, y: eyeCenterY + 50 };
             const rightEarPoint = keypoints[454] || { x: eyeCenterX + 100, y: eyeCenterY + 50 };
-            
-            // Get chin/neck area for necklaces
             const chinPoint = keypoints[152] || { x: eyeCenterX, y: video.videoHeight * 0.7 };
             
-            // Calculate face dimensions
             const faceWidth = Math.abs(rightEarPoint.x - leftEarPoint.x);
-            const noseTip = keypoints[4] || { y: eyeCenterY + 50 };
             const faceHeight = Math.abs(chinPoint.y - (keypoints[10]?.y || eyeCenterY - 80));
             
-            // Calculate rotation
-            const deltaX = rightEyePoints[0]?.x - leftEyePoints[0]?.x || 1;
-            const deltaY = rightEyePoints[0]?.y - leftEyePoints[0]?.y || 0;
+            const deltaX = keypoints[263]?.x - keypoints[33]?.x || 1;
+            const deltaY = keypoints[263]?.y - keypoints[33]?.y || 0;
             const rotation = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
 
             setFaceData({
@@ -211,28 +347,22 @@ const useFaceMesh = (
             setFaceDetected(false);
           }
         } else {
-          // Fallback: basic skin tone detection
-          fallbackDetection(video);
+          setFaceData({
+            eyeCenter: { x: 50, y: 35 },
+            leftEar: { x: 25, y: 40 },
+            rightEar: { x: 75, y: 40 },
+            neckCenter: { x: 50, y: 65 },
+            faceWidth: 40,
+            faceHeight: 50,
+            rotation: 0,
+          });
+          setFaceDetected(true);
         }
       } catch (error) {
-        fallbackDetection(videoRef.current);
+        console.error("Face detection error:", error);
       }
 
       animationRef.current = requestAnimationFrame(detectFace);
-    };
-
-    const fallbackDetection = (video: HTMLVideoElement) => {
-      // Basic centered detection
-      setFaceData({
-        eyeCenter: { x: 50, y: 35 },
-        leftEar: { x: 25, y: 40 },
-        rightEar: { x: 75, y: 40 },
-        neckCenter: { x: 50, y: 65 },
-        faceWidth: 40,
-        faceHeight: 50,
-        rotation: 0,
-      });
-      setFaceDetected(true);
     };
 
     const timeoutId = setTimeout(() => {
@@ -250,127 +380,64 @@ const useFaceMesh = (
   return { faceData, isLoading, faceDetected };
 };
 
-// Enhanced Face Frame Overlay with mesh visualization
-const FaceFrameOverlay = ({ 
-  isLoading, 
-  faceDetected, 
-  faceData 
-}: { 
-  isLoading: boolean; 
-  faceDetected: boolean;
-  faceData: any;
-}) => {
-  if (isLoading) {
-    return (
+// Loading Overlay Component
+const LoadingOverlay = ({ message }: { message: string }) => (
+  <motion.div
+    className="absolute inset-0 flex items-center justify-center z-20 bg-black/50"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+  >
+    <div className="text-center">
       <motion.div
-        className="absolute inset-0 flex items-center justify-center z-20 bg-black/40"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <div className="text-center">
-          <motion.div
-            className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full mx-auto mb-4"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          />
-          <p className="text-white text-sm">Loading AI Face Mesh...</p>
-          <p className="text-amber-500 text-xs mt-1">Powered by TensorFlow.js</p>
-        </div>
-      </motion.div>
-    );
-  }
+        className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full mx-auto mb-4"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+      />
+      <p className="text-white text-sm">{message}</p>
+      <p className="text-amber-500 text-xs mt-1">Powered by TensorFlow.js</p>
+    </div>
+  </motion.div>
+);
 
-  if (!faceData) return null;
+// Hand Frame Overlay for Ring Try-On
+const HandFrameOverlay = ({ 
+  handData, 
+  handDetected 
+}: { 
+  handData: any;
+  handDetected: boolean;
+}) => {
+  if (!handData) return null;
 
   return (
     <motion.div
       className="absolute pointer-events-none z-15"
       style={{
-        left: `${faceData.eyeCenter.x}%`,
-        top: `${faceData.eyeCenter.y}%`,
-        transform: `translate(-50%, -50%) rotate(${faceData.rotation}deg)`,
+        left: `${handData.fingerPosition.x}%`,
+        top: `${handData.fingerPosition.y}%`,
+        transform: `translate(-50%, -50%)`,
       }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      <motion.div 
-        className="relative"
-        style={{ 
-          width: `${faceData.faceWidth * 2}vw`, 
-          height: `${faceData.faceHeight * 1.5}vh`,
-        }}
-      >
-        {/* Face mesh grid visualization */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <motion.ellipse
-            cx="50"
-            cy="50"
-            rx="45"
-            ry="48"
-            fill="none"
-            stroke={faceDetected ? "#22c55e" : "#f59e0b"}
-            strokeWidth="0.5"
-            strokeDasharray="4 2"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1 }}
-          />
-          
-          {/* Eye guides */}
-          <circle cx="35" cy="40" r="8" fill="none" stroke="#22c55e" strokeWidth="0.3" opacity={0.5} />
-          <circle cx="65" cy="40" r="8" fill="none" stroke="#22c55e" strokeWidth="0.3" opacity={0.5} />
-          
-          {/* Nose guide */}
-          <line x1="50" y1="45" x2="50" y2="60" stroke="#22c55e" strokeWidth="0.3" opacity={0.5} />
-          
-          {/* Mouth guide */}
-          <ellipse cx="50" cy="70" rx="15" ry="6" fill="none" stroke="#22c55e" strokeWidth="0.3" opacity={0.5} />
-        </svg>
-
-        {/* Tracking points */}
-        {faceDetected && (
-          <>
-            {/* Eye points */}
-            <motion.div
-              className="absolute w-2 h-2 bg-green-500 rounded-full"
-              style={{ left: "35%", top: "40%" }}
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            />
-            <motion.div
-              className="absolute w-2 h-2 bg-green-500 rounded-full"
-              style={{ left: "65%", top: "40%" }}
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-            />
-            
-            {/* Ear points */}
-            <motion.div
-              className="absolute w-1.5 h-1.5 bg-amber-500 rounded-full"
-              style={{ left: "5%", top: "45%" }}
-              animate={{ scale: [1, 1.3, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-            />
-            <motion.div
-              className="absolute w-1.5 h-1.5 bg-amber-500 rounded-full"
-              style={{ left: "95%", top: "45%" }}
-              animate={{ scale: [1, 1.3, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
-            />
-          </>
-        )}
-      </motion.div>
-      
-      {/* Status indicator */}
+      {/* Finger tracking indicator */}
       <motion.div
-        className={`absolute -bottom-8 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-medium ${
-          faceDetected ? 'bg-green-500/20 text-green-500' : 'bg-amber-500/20 text-amber-500'
+        className={`w-6 h-6 rounded-full border-2 ${
+          handDetected ? 'border-green-500 bg-green-500/20' : 'border-amber-500 bg-amber-500/20'
+        }`}
+        animate={{ scale: [1, 1.2, 1] }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+      />
+      
+      <motion.p
+        className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] whitespace-nowrap font-medium ${
+          handDetected ? 'text-green-500' : 'text-amber-500'
         }`}
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 1.5, repeat: Infinity }}
       >
-        {faceDetected ? "✓ Face Mesh Active" : "Align your face..."}
-      </motion.div>
+        {handDetected ? "Ring finger detected ✓" : "Show your hand..."}
+      </motion.p>
     </motion.div>
   );
 };
@@ -408,6 +475,103 @@ const SparkleEffect = ({ isActive }: { isActive: boolean }) => {
   );
 };
 
+// Shop the Look Panel
+interface ShopTheLookItem {
+  product: DemoProduct;
+  image: string;
+}
+
+const ShopTheLookPanel = ({ 
+  items, 
+  onRemove, 
+  onAddAllToCart,
+  onClose 
+}: { 
+  items: ShopTheLookItem[];
+  onRemove: (id: string) => void;
+  onAddAllToCart: () => void;
+  onClose: () => void;
+}) => {
+  const totalPrice = items.reduce((sum, item) => sum + item.product.price, 0);
+
+  return (
+    <motion.div
+      className="absolute top-24 left-2 md:left-4 w-64 md:w-80 z-30 bg-black/90 backdrop-blur-md rounded-xl overflow-hidden"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+    >
+      <div className="p-4 border-b border-white/10">
+        <div className="flex items-center justify-between">
+          <h4 className="text-white font-serif text-sm flex items-center gap-2">
+            <ShoppingBag className="w-4 h-4 text-amber-500" />
+            Shop the Look
+          </h4>
+          <button onClick={onClose} className="text-white/60 hover:text-white">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <p className="text-white/60 text-xs mt-1">{items.length} items saved</p>
+      </div>
+      
+      <div className="max-h-60 overflow-y-auto">
+        {items.length === 0 ? (
+          <div className="p-6 text-center">
+            <Sparkles className="w-8 h-8 text-amber-500/50 mx-auto mb-2" />
+            <p className="text-white/60 text-xs">Try on items and save them here!</p>
+          </div>
+        ) : (
+          items.map((item) => (
+            <motion.div
+              key={item.product.id}
+              className="flex items-center gap-3 p-3 border-b border-white/5 hover:bg-white/5"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/10 shrink-0">
+                <img 
+                  src={item.image} 
+                  alt={item.product.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white text-xs font-medium truncate">{item.product.title}</p>
+                <p className="text-amber-500 text-xs">${item.product.price}</p>
+              </div>
+              <button
+                onClick={() => onRemove(item.product.id)}
+                className="p-1.5 text-white/40 hover:text-rose-400 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </motion.div>
+          ))
+        )}
+      </div>
+      
+      {items.length > 0 && (
+        <div className="p-4 bg-black/50">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-white/60 text-xs">Total</span>
+            <span className="text-amber-500 font-medium">${totalPrice.toFixed(2)}</span>
+          </div>
+          <motion.button
+            onClick={onAddAllToCart}
+            className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-black text-sm font-medium rounded-lg flex items-center justify-center gap-2"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <ShoppingBag className="w-4 h-4" />
+            Add All to Cart
+          </motion.button>
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
 // Before/After Comparison Slider
 const ComparisonView = ({ 
   withProduct, 
@@ -428,22 +592,18 @@ const ComparisonView = ({
     setSliderPosition(Math.max(0, Math.min(100, position)));
   }, []);
 
-  const handleMouseMove = (e: React.MouseEvent) => handleMove(e.clientX);
-  const handleTouchMove = (e: React.TouchEvent) => handleMove(e.touches[0].clientX);
-
   if (!isActive || !withProduct || !withoutProduct) return null;
 
   return (
     <motion.div
       ref={containerRef}
-      className="absolute inset-0 z-40 cursor-ew-resize"
+      className="absolute inset-0 z-40 cursor-ew-resize touch-none"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      onMouseMove={handleMouseMove}
-      onTouchMove={handleTouchMove}
+      onMouseMove={(e) => handleMove(e.clientX)}
+      onTouchMove={(e) => handleMove(e.touches[0].clientX)}
     >
-      {/* Without product (left) */}
       <div 
         className="absolute inset-0 overflow-hidden"
         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
@@ -452,13 +612,13 @@ const ComparisonView = ({
           src={withoutProduct} 
           alt="Without product" 
           className="w-full h-full object-cover"
+          loading="lazy"
         />
         <div className="absolute top-4 left-4 bg-black/60 px-3 py-1.5 rounded-full text-white text-xs">
           Before
         </div>
       </div>
 
-      {/* With product (right) */}
       <div 
         className="absolute inset-0 overflow-hidden"
         style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
@@ -467,13 +627,13 @@ const ComparisonView = ({
           src={withProduct} 
           alt="With product" 
           className="w-full h-full object-cover"
+          loading="lazy"
         />
         <div className="absolute top-4 right-4 bg-amber-500/90 px-3 py-1.5 rounded-full text-black text-xs font-medium">
           After ✨
         </div>
       </div>
 
-      {/* Slider line */}
       <motion.div
         className="absolute top-0 bottom-0 w-1 bg-white shadow-lg cursor-ew-resize"
         style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
@@ -499,7 +659,7 @@ export const VirtualTryOn = () => {
   const [capturedWithoutProduct, setCapturedWithoutProduct] = useState<string | null>(null);
   const [showComparison, setShowComparison] = useState(false);
   const [manualPosition, setManualPosition] = useState<{ x: number; y: number } | null>(null);
-  const [glassesScale, setGlassesScale] = useState(1);
+  const [productScale, setProductScale] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
   const [cameraFacing, setCameraFacing] = useState<"user" | "environment">("user");
   const [activeFilter, setActiveFilter] = useState(beautyFilters[0]);
@@ -507,23 +667,49 @@ export const VirtualTryOn = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showSparkles, setShowSparkles] = useState(false);
   const [showProduct, setShowProduct] = useState(true);
+  const [showShopTheLook, setShowShopTheLook] = useState(false);
+  const [shopTheLookItems, setShopTheLookItems] = useState<ShopTheLookItem[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  const products = mode === "eyewear" ? eyewearProducts : jewelryProducts;
+  const { addItem } = useLocalCartStore();
+
+  const getProductsForMode = () => {
+    switch (mode) {
+      case "eyewear": return eyewearProducts;
+      case "rings": return ringProducts;
+      default: return jewelryProducts;
+    }
+  };
+
+  const products = getProductsForMode();
   const images = mode === "eyewear" ? eyewearImages : jewelryImages;
 
-  const { faceData, isLoading, faceDetected } = useFaceMesh(videoRef, isCameraActive && !capturedImage);
+  const { faceData, isLoading: faceLoading, faceDetected } = useFaceMesh(
+    videoRef, 
+    isCameraActive && !capturedImage && mode !== "rings"
+  );
+  
+  const { handData, isLoading: handLoading, handDetected } = useHandPose(
+    videoRef, 
+    isCameraActive && !capturedImage && mode === "rings"
+  );
+
+  const isLoading = mode === "rings" ? handLoading : faceLoading;
 
   const getProductPosition = useCallback(() => {
     if (manualPosition) {
       return { x: manualPosition.x, y: manualPosition.y };
     }
     
+    if (mode === "rings" && handData) {
+      return { x: handData.fingerPosition.x, y: handData.fingerPosition.y };
+    }
+    
     if (!faceData) {
-      return { x: 50, y: 40 };
+      return { x: 50, y: mode === "rings" ? 70 : 40 };
     }
 
     if (mode === "eyewear") {
@@ -536,15 +722,15 @@ export const VirtualTryOn = () => {
       }
       return { x: faceData.eyeCenter.x, y: faceData.eyeCenter.y + 10 };
     }
-  }, [faceData, manualPosition, mode, selectedProduct]);
+  }, [faceData, handData, manualPosition, mode, selectedProduct]);
 
   const startCamera = useCallback(async () => {
     try {
       const constraints: MediaStreamConstraints = {
         video: {
           facingMode: cameraFacing,
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 },
         }
       };
 
@@ -554,7 +740,7 @@ export const VirtualTryOn = () => {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         setIsCameraActive(true);
-        toast.success("Camera ready! AI face mesh initializing...");
+        toast.success("Camera ready!");
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
@@ -592,7 +778,7 @@ export const VirtualTryOn = () => {
         ctx.filter = activeFilter.filter || "none";
         ctx.drawImage(video, 0, 0);
         
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
         
         if (withProductOverlay) {
           setCapturedImage(dataUrl);
@@ -606,22 +792,29 @@ export const VirtualTryOn = () => {
     }
   }, [cameraFacing, activeFilter]);
 
-  const captureComparison = useCallback(() => {
-    // First capture without product
-    const originalShowProduct = showProduct;
-    setShowProduct(false);
-    
-    setTimeout(() => {
-      capturePhoto(false);
-      setShowProduct(true);
-      
-      setTimeout(() => {
-        capturePhoto(true);
-        setShowComparison(true);
-        toast.success("Comparison photos captured!");
-      }, 100);
-    }, 100);
-  }, [capturePhoto, showProduct]);
+  const addToShopTheLook = useCallback(() => {
+    const existingItem = shopTheLookItems.find(item => item.product.id === selectedProduct.id);
+    if (!existingItem) {
+      const productImage = images[selectedProduct.id] || (mode === "eyewear" ? eyewearProduct1 : productNecklace);
+      setShopTheLookItems(prev => [...prev, { product: selectedProduct, image: productImage }]);
+      toast.success(`${selectedProduct.title} added to your look!`);
+    } else {
+      toast.info("This item is already in your look");
+    }
+  }, [selectedProduct, shopTheLookItems, images, mode]);
+
+  const removeFromShopTheLook = useCallback((productId: string) => {
+    setShopTheLookItems(prev => prev.filter(item => item.product.id !== productId));
+  }, []);
+
+  const addAllToCart = useCallback(() => {
+    shopTheLookItems.forEach(item => {
+      addItem(item.product, 1);
+    });
+    toast.success(`${shopTheLookItems.length} items added to cart!`);
+    setShopTheLookItems([]);
+    setShowShopTheLook(false);
+  }, [shopTheLookItems, addItem]);
 
   const downloadPhoto = useCallback(() => {
     if (capturedImage) {
@@ -674,7 +867,7 @@ export const VirtualTryOn = () => {
 
   useEffect(() => {
     setManualPosition(null);
-    setGlassesScale(1);
+    setProductScale(1);
   }, [selectedProduct, mode]);
 
   const nextProduct = () => {
@@ -711,17 +904,17 @@ export const VirtualTryOn = () => {
   const position = getProductPosition();
   
   const getOverlayStyle = () => {
-    const baseWidth = mode === "eyewear" ? faceData?.faceWidth || 35 : 25;
+    const rotation = mode === "rings" && handData ? handData.fingerAngle : (faceData?.rotation || 0);
+    const baseWidth = mode === "eyewear" ? 120 : mode === "rings" ? 40 : 80;
     
     return {
       left: `${position.x}%`,
       top: `${position.y}%`,
-      transform: `translate(-50%, -50%) scale(${glassesScale}) rotate(${faceData?.rotation || 0}deg)`,
-      width: `${baseWidth * 3}px`,
+      transform: `translate(-50%, -50%) scale(${productScale}) rotate(${rotation}deg)`,
+      width: `${baseWidth}px`,
     };
   };
 
-  // Render second earring for earrings mode
   const renderSecondEarring = () => {
     if (mode !== "jewelry" || selectedProduct.category !== "earrings" || !faceData || !showProduct) return null;
     
@@ -731,7 +924,7 @@ export const VirtualTryOn = () => {
         style={{
           left: `${faceData.rightEar.x}%`,
           top: `${faceData.rightEar.y}%`,
-          transform: `translate(-50%, -50%) scale(${glassesScale}) rotate(${faceData?.rotation || 0}deg)`,
+          transform: `translate(-50%, -50%) scale(${productScale}) rotate(${faceData?.rotation || 0}deg)`,
           width: "60px",
         }}
         animate={{ y: isDragging ? 0 : [0, -2, 0] }}
@@ -745,6 +938,7 @@ export const VirtualTryOn = () => {
             filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
             transform: "scaleX(-1)",
           }}
+          loading="lazy"
         />
       </motion.div>
     );
@@ -782,30 +976,49 @@ export const VirtualTryOn = () => {
                 </motion.div>
                 <div>
                   <span className="text-white font-serif text-sm md:text-lg">AR Virtual Try-On</span>
-                  <span className="text-amber-500 text-[10px] ml-2 hidden sm:inline">TensorFlow.js</span>
+                  <span className="text-amber-500 text-[10px] ml-2 hidden sm:inline">AI Powered</span>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 md:gap-2">
+                {/* Shop the Look Toggle */}
+                <button
+                  onClick={() => setShowShopTheLook(!showShopTheLook)}
+                  className={`w-9 h-9 md:w-10 md:h-10 backdrop-blur-sm flex items-center justify-center transition-colors rounded-full relative ${
+                    showShopTheLook ? 'bg-amber-500 text-black' : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                  title="Shop the Look"
+                >
+                  <ShoppingBag className="w-4 h-4 md:w-5 md:h-5" />
+                  {shopTheLookItems.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                      {shopTheLookItems.length}
+                    </span>
+                  )}
+                </button>
+                {/* Add to Look Button */}
+                <button
+                  onClick={addToShopTheLook}
+                  className="w-9 h-9 md:w-10 md:h-10 bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-amber-500 hover:text-black transition-colors rounded-full"
+                  title="Add to your look"
+                >
+                  <Heart className="w-4 h-4 md:w-5 md:h-5" />
+                </button>
                 {/* Show/Hide Product Toggle */}
                 <button
                   onClick={() => setShowProduct(!showProduct)}
-                  className={`w-9 h-9 md:w-10 md:h-10 backdrop-blur-sm flex items-center justify-center transition-colors rounded-full ${showProduct ? 'bg-amber-500 text-black' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                  className={`w-9 h-9 md:w-10 md:h-10 backdrop-blur-sm flex items-center justify-center transition-colors rounded-full ${
+                    showProduct ? 'bg-amber-500 text-black' : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
                   title={showProduct ? "Hide product" : "Show product"}
                 >
                   {showProduct ? <Eye className="w-4 h-4 md:w-5 md:h-5" /> : <EyeOff className="w-4 h-4 md:w-5 md:h-5" />}
                 </button>
-                {/* Comparison View */}
-                <button
-                  onClick={() => !capturedImage && captureComparison()}
-                  className={`w-9 h-9 md:w-10 md:h-10 backdrop-blur-sm flex items-center justify-center transition-colors rounded-full ${showComparison ? 'bg-amber-500 text-black' : 'bg-white/10 text-white hover:bg-white/20'}`}
-                  title="Compare before/after"
-                >
-                  <Layers className="w-4 h-4 md:w-5 md:h-5" />
-                </button>
                 {/* Filter Toggle */}
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`w-9 h-9 md:w-10 md:h-10 backdrop-blur-sm flex items-center justify-center transition-colors rounded-full ${showFilters ? 'bg-amber-500 text-black' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                  className={`w-9 h-9 md:w-10 md:h-10 backdrop-blur-sm flex items-center justify-center transition-colors rounded-full ${
+                    showFilters ? 'bg-amber-500 text-black' : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
                 >
                   <Wand2 className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
@@ -832,30 +1045,56 @@ export const VirtualTryOn = () => {
                   setMode("eyewear");
                   setSelectedProduct(eyewearProducts[0]);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm transition-all ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm transition-all ${
                   mode === "eyewear" 
                     ? "bg-amber-500 text-black" 
                     : "text-white hover:bg-white/10"
                 }`}
               >
                 <Glasses className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                <span>Eyewear</span>
+                <span className="hidden sm:inline">Eyewear</span>
               </button>
               <button
                 onClick={() => {
                   setMode("jewelry");
                   setSelectedProduct(jewelryProducts[0]);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm transition-all ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm transition-all ${
                   mode === "jewelry" 
                     ? "bg-amber-500 text-black" 
                     : "text-white hover:bg-white/10"
                 }`}
               >
                 <Gem className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                <span>Jewelry</span>
+                <span className="hidden sm:inline">Jewelry</span>
+              </button>
+              <button
+                onClick={() => {
+                  setMode("rings");
+                  setSelectedProduct(ringProducts[0]);
+                }}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm transition-all ${
+                  mode === "rings" 
+                    ? "bg-amber-500 text-black" 
+                    : "text-white hover:bg-white/10"
+                }`}
+              >
+                <Hand className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">Rings</span>
               </button>
             </div>
+
+            {/* Shop the Look Panel */}
+            <AnimatePresence>
+              {showShopTheLook && (
+                <ShopTheLookPanel
+                  items={shopTheLookItems}
+                  onRemove={removeFromShopTheLook}
+                  onAddAllToCart={addAllToCart}
+                  onClose={() => setShowShopTheLook(false)}
+                />
+              )}
+            </AnimatePresence>
 
             {/* Beauty Filters Panel */}
             <AnimatePresence>
@@ -914,7 +1153,7 @@ export const VirtualTryOn = () => {
             {/* Camera View */}
             <div 
               ref={overlayRef}
-              className="relative flex-1 w-full"
+              className="relative flex-1 w-full touch-none"
               onMouseMove={handleDrag}
               onTouchMove={handleDrag}
               onMouseUp={handleDragEnd}
@@ -953,12 +1192,20 @@ export const VirtualTryOn = () => {
                     />
                   )}
                   
-                  {/* Face Mesh Overlay */}
-                  <FaceFrameOverlay 
-                    isLoading={isLoading} 
-                    faceDetected={faceDetected}
-                    faceData={faceData} 
-                  />
+                  {/* Loading Overlay */}
+                  {isLoading && (
+                    <LoadingOverlay 
+                      message={mode === "rings" ? "Loading Hand Tracking..." : "Loading Face Mesh..."} 
+                    />
+                  )}
+                  
+                  {/* Hand Frame Overlay for Ring Mode */}
+                  {mode === "rings" && !isLoading && (
+                    <HandFrameOverlay 
+                      handData={handData}
+                      handDetected={handDetected} 
+                    />
+                  )}
                   
                   {/* Product Overlay */}
                   {isCameraActive && showProduct && !isLoading && (
@@ -977,13 +1224,14 @@ export const VirtualTryOn = () => {
                       }}
                     >
                       <img
-                        src={images[selectedProduct.id] || (mode === "eyewear" ? eyewearProduct1 : productNecklace)}
+                        src={images[selectedProduct.id] || (mode === "eyewear" ? eyewearProduct1 : mode === "rings" ? productRing : productNecklace)}
                         alt="Product overlay"
                         className="w-full h-auto opacity-90 drop-shadow-lg pointer-events-none"
                         style={{ 
                           filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
-                          mixBlendMode: mode === "jewelry" ? "multiply" : "normal",
+                          mixBlendMode: mode !== "eyewear" ? "multiply" : "normal",
                         }}
+                        loading="lazy"
                       />
                     </motion.div>
                   )}
@@ -1000,13 +1248,13 @@ export const VirtualTryOn = () => {
                     </div>
                     <div className="flex items-center gap-0.5 bg-black/50 backdrop-blur-sm rounded-full">
                       <button
-                        onClick={() => setGlassesScale(s => Math.max(0.5, s - 0.1))}
+                        onClick={() => setProductScale(s => Math.max(0.5, s - 0.1))}
                         className="p-1.5 md:p-2 text-white hover:text-amber-500 transition-colors"
                       >
                         <ZoomOut className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => setGlassesScale(s => Math.min(2, s + 0.1))}
+                        onClick={() => setProductScale(s => Math.min(2, s + 0.1))}
                         className="p-1.5 md:p-2 text-white hover:text-amber-500 transition-colors"
                       >
                         <ZoomIn className="w-4 h-4" />
@@ -1020,6 +1268,7 @@ export const VirtualTryOn = () => {
                     src={capturedImage}
                     alt="Captured"
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                   <SparkleEffect isActive={showSparkles} />
                 </div>
@@ -1045,7 +1294,7 @@ export const VirtualTryOn = () => {
                   animate={{ opacity: 1, scale: 1 }}
                 >
                   <p className="text-amber-500 text-[10px] md:text-xs uppercase tracking-wide text-center">
-                    {mode === "eyewear" ? "Eyewear" : selectedProduct.category}
+                    {mode === "eyewear" ? "Eyewear" : mode === "rings" ? "Rings" : selectedProduct.category}
                   </p>
                   <p className="text-white text-xs md:text-base font-medium text-center truncate">
                     {selectedProduct.title}
@@ -1098,7 +1347,7 @@ export const VirtualTryOn = () => {
                     <Share2 className="w-5 h-5 md:w-6 md:h-6" />
                   </button>
                   <button
-                    onClick={() => toast.success("Added to wishlist!")}
+                    onClick={addToShopTheLook}
                     className="w-11 h-11 md:w-14 md:h-14 bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-rose-500 hover:text-white transition-colors rounded-full"
                   >
                     <Heart className="w-5 h-5 md:w-6 md:h-6" />
