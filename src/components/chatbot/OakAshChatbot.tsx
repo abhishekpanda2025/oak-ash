@@ -336,12 +336,12 @@ export const OakAshChatbot = () => {
 
   return (
     <>
-      {/* Chat Trigger Button */}
+      {/* Chat Trigger Button - Bottom Right */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-40 flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-amber-500 to-amber-600 text-black rounded-full shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-all"
+            className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-40 flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-amber-500 to-amber-600 text-black rounded-full shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-all"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
@@ -360,11 +360,11 @@ export const OakAshChatbot = () => {
         )}
       </AnimatePresence>
 
-      {/* Chat Window */}
+      {/* Chat Window - Bottom Right */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed bottom-0 left-0 right-0 md:bottom-6 md:left-6 md:right-auto z-50 w-full md:w-[400px] h-[85vh] md:h-[600px] bg-white md:rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-0 right-0 left-0 md:bottom-6 md:right-6 md:left-auto z-50 w-full md:w-[400px] h-[85vh] md:h-[600px] bg-white md:rounded-2xl shadow-2xl flex flex-col overflow-hidden"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}

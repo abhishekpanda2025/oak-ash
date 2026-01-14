@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useRef, useEffect, useState, useMemo } from "react";
-import { ArrowRight, ShoppingBag, Eye, X, Volume2, VolumeX } from "lucide-react";
+import { ArrowRight, ShoppingBag, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
 
@@ -15,6 +15,17 @@ import modelHero7 from "@/assets/model-hero-7.jpg";
 import modelHero8 from "@/assets/model-hero-8.jpg";
 import modelHero9 from "@/assets/model-hero-9.jpg";
 import modelHero10 from "@/assets/model-hero-10.jpg";
+// New jewelry models
+import modelJewelry1 from "@/assets/model-jewelry-1.jpg";
+import modelJewelry2 from "@/assets/model-jewelry-2.jpg";
+import modelJewelry3 from "@/assets/model-jewelry-3.jpg";
+import modelJewelry4 from "@/assets/model-jewelry-4.jpg";
+import modelJewelry5 from "@/assets/model-jewelry-5.jpg";
+import modelJewelry6 from "@/assets/model-jewelry-6.jpg";
+import modelJewelry7 from "@/assets/model-jewelry-7.jpg";
+import modelJewelry8 from "@/assets/model-jewelry-8.jpg";
+import modelJewelry9 from "@/assets/model-jewelry-9.jpg";
+import modelJewelry10 from "@/assets/model-jewelry-10.jpg";
 import runwayVideo from "@/assets/runway-background.mp4";
 
 // Shop the look hotspot type
@@ -28,7 +39,7 @@ interface Hotspot {
   link: string;
 }
 
-// Model data for the runway
+// Model data for the runway - now with 20 models
 const models = [
   { 
     id: 1, 
@@ -36,118 +47,228 @@ const models = [
     name: "Sophia", 
     collection: "Gold Statement Collection",
     description: "Layered gold necklaces & signature sunglasses",
+    parallaxEffect: "scale",
     hotspots: [
       { id: "h1-1", x: "52%", y: "18%", type: "eyewear" as const, productName: "Cat-Eye Gold Frames", price: "£285", link: "/eyewear" },
       { id: "h1-2", x: "48%", y: "28%", type: "jewelry" as const, productName: "Statement Gold Necklace", price: "£450", link: "/jewellery" },
-      { id: "h1-3", x: "52%", y: "35%", type: "jewelry" as const, productName: "Layered Chain Set", price: "£320", link: "/jewellery" },
     ]
   },
   { 
     id: 2, 
-    image: modelHero6, 
-    name: "Mei Lin", 
-    collection: "Rose Gold Elegance",
-    description: "Rose gold cat-eye frames & delicate chains",
+    image: modelJewelry1, 
+    name: "Lucia", 
+    collection: "Bracelet Elegance",
+    description: "Stunning gold filigree bracelet collection",
+    parallaxEffect: "rotate",
     hotspots: [
-      { id: "h2-1", x: "50%", y: "22%", type: "eyewear" as const, productName: "Rose Cat-Eye Sunglasses", price: "£295", link: "/eyewear" },
-      { id: "h2-2", x: "42%", y: "30%", type: "jewelry" as const, productName: "Diamond Hoop Earrings", price: "£380", link: "/jewellery" },
-      { id: "h2-3", x: "50%", y: "42%", type: "jewelry" as const, productName: "Layered Rose Necklaces", price: "£425", link: "/jewellery" },
+      { id: "h11-1", x: "50%", y: "55%", type: "jewelry" as const, productName: "Gold Filigree Bracelet", price: "£520", link: "/jewellery" },
     ]
   },
   { 
     id: 3, 
-    image: modelHero7, 
-    name: "Amara", 
-    collection: "Bold Gold Collection",
-    description: "Statement gold chain & oversized frames",
+    image: modelHero6, 
+    name: "Mei Lin", 
+    collection: "Rose Gold Elegance",
+    description: "Rose gold cat-eye frames & delicate chains",
+    parallaxEffect: "slide",
     hotspots: [
-      { id: "h3-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Oversized Square Frames", price: "£340", link: "/eyewear" },
-      { id: "h3-2", x: "50%", y: "35%", type: "jewelry" as const, productName: "Chunky Gold Chain", price: "£580", link: "/jewellery" },
-      { id: "h3-3", x: "35%", y: "55%", type: "jewelry" as const, productName: "Gold Cuff Bracelets", price: "£420", link: "/jewellery" },
+      { id: "h2-1", x: "50%", y: "22%", type: "eyewear" as const, productName: "Rose Cat-Eye Sunglasses", price: "£295", link: "/eyewear" },
+      { id: "h2-2", x: "42%", y: "30%", type: "jewelry" as const, productName: "Diamond Hoop Earrings", price: "£380", link: "/jewellery" },
     ]
   },
   { 
     id: 4, 
-    image: modelHero3, 
-    name: "Victoria", 
-    collection: "Pearl & Gold Collection",
-    description: "Pearl jewelry with OAK & ASH cat-eye frames",
+    image: modelJewelry2, 
+    name: "Diana", 
+    collection: "Diamond Ring Collection",
+    description: "Exquisite diamond cluster ring",
+    parallaxEffect: "zoom",
     hotspots: [
-      { id: "h4-1", x: "40%", y: "22%", type: "eyewear" as const, productName: "Tortoise Cat-Eye", price: "£265", link: "/eyewear" },
-      { id: "h4-2", x: "35%", y: "30%", type: "jewelry" as const, productName: "Pearl Drop Earrings", price: "£290", link: "/jewellery" },
-      { id: "h4-3", x: "32%", y: "58%", type: "jewelry" as const, productName: "Gold Bangle Stack", price: "£350", link: "/jewellery" },
+      { id: "h12-1", x: "45%", y: "48%", type: "jewelry" as const, productName: "Diamond Cluster Ring", price: "£890", link: "/jewellery" },
     ]
   },
   { 
     id: 5, 
-    image: modelHero8, 
-    name: "Elena", 
-    collection: "Emerald Luxe Collection",
-    description: "Emerald jewelry with gold aviator frames",
+    image: modelHero7, 
+    name: "Amara", 
+    collection: "Bold Gold Collection",
+    description: "Statement gold chain & oversized frames",
+    parallaxEffect: "fade",
     hotspots: [
-      { id: "h5-1", x: "50%", y: "15%", type: "eyewear" as const, productName: "Green Tint Aviators", price: "£310", link: "/eyewear" },
-      { id: "h5-2", x: "50%", y: "32%", type: "jewelry" as const, productName: "Emerald Statement Necklace", price: "£850", link: "/jewellery" },
-      { id: "h5-3", x: "35%", y: "52%", type: "jewelry" as const, productName: "Emerald Tennis Bracelet", price: "£720", link: "/jewellery" },
+      { id: "h3-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Oversized Square Frames", price: "£340", link: "/eyewear" },
+      { id: "h3-2", x: "50%", y: "35%", type: "jewelry" as const, productName: "Chunky Gold Chain", price: "£580", link: "/jewellery" },
     ]
   },
   { 
     id: 6, 
-    image: modelHero4, 
-    name: "Isabella", 
-    collection: "Diamond Chandelier Collection",
-    description: "Chandelier earrings & gold rectangular frames",
+    image: modelJewelry3, 
+    name: "Natasha", 
+    collection: "Crystal Chandelier Earrings",
+    description: "Dramatic crystal drop earrings",
+    parallaxEffect: "tilt",
     hotspots: [
-      { id: "h6-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Gold Rectangle Frames", price: "£275", link: "/eyewear" },
-      { id: "h6-2", x: "40%", y: "28%", type: "jewelry" as const, productName: "Diamond Chandelier Earrings", price: "£680", link: "/jewellery" },
-      { id: "h6-3", x: "52%", y: "38%", type: "jewelry" as const, productName: "Diamond Cocktail Ring", price: "£520", link: "/jewellery" },
+      { id: "h13-1", x: "52%", y: "35%", type: "jewelry" as const, productName: "Crystal Chandelier Earrings", price: "£680", link: "/jewellery" },
     ]
   },
   { 
     id: 7, 
-    image: modelHero5, 
-    name: "Catherine", 
-    collection: "Silver Diamond Collection",
-    description: "Diamond tennis bracelet & tortoise sunglasses",
+    image: modelHero3, 
+    name: "Victoria", 
+    collection: "Pearl & Gold Collection",
+    description: "Pearl jewelry with OAK & ASH cat-eye frames",
+    parallaxEffect: "scale",
     hotspots: [
-      { id: "h7-1", x: "38%", y: "22%", type: "eyewear" as const, productName: "Round Tortoise Sunglasses", price: "£255", link: "/eyewear" },
-      { id: "h7-2", x: "42%", y: "35%", type: "jewelry" as const, productName: "Diamond Pendant Necklace", price: "£890", link: "/jewellery" },
-      { id: "h7-3", x: "32%", y: "52%", type: "jewelry" as const, productName: "Diamond Tennis Bracelet", price: "£1,200", link: "/jewellery" },
+      { id: "h4-1", x: "40%", y: "22%", type: "eyewear" as const, productName: "Tortoise Cat-Eye", price: "£265", link: "/eyewear" },
+      { id: "h4-2", x: "35%", y: "30%", type: "jewelry" as const, productName: "Pearl Drop Earrings", price: "£290", link: "/jewellery" },
     ]
   },
   { 
     id: 8, 
-    image: modelHero2, 
-    name: "Alexander", 
-    collection: "Men's Luxe Collection",
-    description: "Gold aviators & premium accessories",
+    image: modelJewelry4, 
+    name: "Bianca", 
+    collection: "Stacked Bangles Collection",
+    description: "Rose gold and gold bangle stack",
+    parallaxEffect: "rotate",
     hotspots: [
-      { id: "h8-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Gold Aviator Sunglasses", price: "£320", link: "/eyewear" },
-      { id: "h8-2", x: "45%", y: "42%", type: "jewelry" as const, productName: "Luxury Gold Watch", price: "£1,450", link: "/jewellery" },
-      { id: "h8-3", x: "52%", y: "48%", type: "jewelry" as const, productName: "Gold Cufflinks Set", price: "£280", link: "/jewellery" },
+      { id: "h14-1", x: "48%", y: "50%", type: "jewelry" as const, productName: "Multi-Tone Bangle Stack", price: "£720", link: "/jewellery" },
     ]
   },
   { 
     id: 9, 
-    image: modelHero9, 
-    name: "Valentina", 
-    collection: "Royal Gold Collection",
-    description: "Layered gold statement pieces & designer shades",
+    image: modelHero8, 
+    name: "Elena", 
+    collection: "Emerald Luxe Collection",
+    description: "Emerald jewelry with gold aviator frames",
+    parallaxEffect: "slide",
     hotspots: [
-      { id: "h9-1", x: "50%", y: "20%", type: "eyewear" as const, productName: "Gradient Square Frames", price: "£295", link: "/eyewear" },
-      { id: "h9-2", x: "50%", y: "32%", type: "jewelry" as const, productName: "Royal Gold Choker", price: "£680", link: "/jewellery" },
-      { id: "h9-3", x: "40%", y: "50%", type: "jewelry" as const, productName: "Gold Cuff Bracelets", price: "£420", link: "/jewellery" },
+      { id: "h5-1", x: "50%", y: "15%", type: "eyewear" as const, productName: "Green Tint Aviators", price: "£310", link: "/eyewear" },
+      { id: "h5-2", x: "50%", y: "32%", type: "jewelry" as const, productName: "Emerald Statement Necklace", price: "£850", link: "/jewellery" },
     ]
   },
   { 
     id: 10, 
+    image: modelJewelry5, 
+    name: "Claudia", 
+    collection: "Emerald Cocktail Ring",
+    description: "Stunning emerald and gold cocktail ring",
+    parallaxEffect: "zoom",
+    hotspots: [
+      { id: "h15-1", x: "48%", y: "52%", type: "jewelry" as const, productName: "Emerald Cocktail Ring", price: "£1,250", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 11, 
+    image: modelHero4, 
+    name: "Isabella", 
+    collection: "Diamond Chandelier Collection",
+    description: "Chandelier earrings & gold rectangular frames",
+    parallaxEffect: "fade",
+    hotspots: [
+      { id: "h6-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Gold Rectangle Frames", price: "£275", link: "/eyewear" },
+      { id: "h6-2", x: "40%", y: "28%", type: "jewelry" as const, productName: "Diamond Chandelier Earrings", price: "£680", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 12, 
+    image: modelJewelry6, 
+    name: "Olivia", 
+    collection: "Pearl Drop Earrings",
+    description: "Elegant baroque pearl earrings",
+    parallaxEffect: "tilt",
+    hotspots: [
+      { id: "h16-1", x: "48%", y: "38%", type: "jewelry" as const, productName: "Baroque Pearl Earrings", price: "£420", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 13, 
+    image: modelHero5, 
+    name: "Catherine", 
+    collection: "Silver Diamond Collection",
+    description: "Diamond tennis bracelet & tortoise sunglasses",
+    parallaxEffect: "scale",
+    hotspots: [
+      { id: "h7-1", x: "38%", y: "22%", type: "eyewear" as const, productName: "Round Tortoise Sunglasses", price: "£255", link: "/eyewear" },
+      { id: "h7-2", x: "42%", y: "35%", type: "jewelry" as const, productName: "Diamond Pendant Necklace", price: "£890", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 14, 
+    image: modelJewelry7, 
+    name: "Margot", 
+    collection: "Diamond Chain Bracelet",
+    description: "Luxurious diamond chain link bracelet",
+    parallaxEffect: "rotate",
+    hotspots: [
+      { id: "h17-1", x: "50%", y: "55%", type: "jewelry" as const, productName: "Diamond Chain Bracelet", price: "£1,450", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 15, 
+    image: modelHero2, 
+    name: "Alexander", 
+    collection: "Men's Luxe Collection",
+    description: "Gold aviators & premium accessories",
+    parallaxEffect: "slide",
+    hotspots: [
+      { id: "h8-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Gold Aviator Sunglasses", price: "£320", link: "/eyewear" },
+      { id: "h8-2", x: "45%", y: "42%", type: "jewelry" as const, productName: "Luxury Gold Watch", price: "£1,450", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 16, 
+    image: modelJewelry8, 
+    name: "Serena", 
+    collection: "Sapphire Eternity Ring",
+    description: "Stunning sapphire and diamond ring",
+    parallaxEffect: "zoom",
+    hotspots: [
+      { id: "h18-1", x: "48%", y: "45%", type: "jewelry" as const, productName: "Sapphire Eternity Ring", price: "£980", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 17, 
+    image: modelHero9, 
+    name: "Valentina", 
+    collection: "Royal Gold Collection",
+    description: "Layered gold statement pieces & designer shades",
+    parallaxEffect: "fade",
+    hotspots: [
+      { id: "h9-1", x: "50%", y: "20%", type: "eyewear" as const, productName: "Gradient Square Frames", price: "£295", link: "/eyewear" },
+      { id: "h9-2", x: "50%", y: "32%", type: "jewelry" as const, productName: "Royal Gold Choker", price: "£680", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 18, 
+    image: modelJewelry9, 
+    name: "Aurora", 
+    collection: "Statement Hoop Earrings",
+    description: "Dramatic sculptural gold hoops",
+    parallaxEffect: "tilt",
+    hotspots: [
+      { id: "h19-1", x: "52%", y: "35%", type: "jewelry" as const, productName: "Sculptural Gold Hoops", price: "£580", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 19, 
     image: modelHero10, 
     name: "Anastasia", 
     collection: "Pearl Couture Collection",
     description: "Baroque pearl statement necklace & crystal earrings",
+    parallaxEffect: "scale",
     hotspots: [
       { id: "h10-1", x: "50%", y: "18%", type: "eyewear" as const, productName: "Cat-Eye Crystal Frames", price: "£345", link: "/eyewear" },
       { id: "h10-2", x: "42%", y: "25%", type: "jewelry" as const, productName: "Diamond Drop Earrings", price: "£520", link: "/jewellery" },
-      { id: "h10-3", x: "50%", y: "38%", type: "jewelry" as const, productName: "Pearl Collar Necklace", price: "£890", link: "/jewellery" },
+    ]
+  },
+  { 
+    id: 20, 
+    image: modelJewelry10, 
+    name: "Penelope", 
+    collection: "Rose Gold Tennis Bracelet",
+    description: "Elegant diamond tennis bracelet",
+    parallaxEffect: "rotate",
+    hotspots: [
+      { id: "h20-1", x: "50%", y: "55%", type: "jewelry" as const, productName: "Rose Gold Tennis Bracelet", price: "£1,200", link: "/jewellery" },
     ]
   },
 ];
@@ -264,55 +385,105 @@ const ShopHotspot = ({
   );
 };
 
-// Walking Model Component with runway animation
+// Get parallax animation variants based on effect type
+const getParallaxAnimation = (effect: string, isActive: boolean, isExiting: boolean) => {
+  const baseTransition = { duration: 1.5, ease: [0.25, 0.1, 0.25, 1] };
+  
+  if (isExiting) {
+    return {
+      animate: { opacity: 0, scale: 0.8, x: "-100%" },
+      transition: { duration: 1.2, ease: "easeIn" }
+    };
+  }
+  
+  if (!isActive) return { animate: {}, transition: {} };
+  
+  switch (effect) {
+    case "scale":
+      return {
+        initial: { opacity: 0, scale: 1.3 },
+        animate: { opacity: 1, scale: 1 },
+        transition: { ...baseTransition, duration: 1.8 }
+      };
+    case "rotate":
+      return {
+        initial: { opacity: 0, scale: 0.9, rotateY: 25 },
+        animate: { opacity: 1, scale: 1, rotateY: 0 },
+        transition: baseTransition
+      };
+    case "slide":
+      return {
+        initial: { opacity: 0, x: "100%" },
+        animate: { opacity: 1, x: "0%" },
+        transition: baseTransition
+      };
+    case "zoom":
+      return {
+        initial: { opacity: 0, scale: 0.5 },
+        animate: { opacity: 1, scale: 1 },
+        transition: { ...baseTransition, duration: 2 }
+      };
+    case "fade":
+      return {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        transition: { duration: 2 }
+      };
+    case "tilt":
+      return {
+        initial: { opacity: 0, rotateX: 15, y: 100 },
+        animate: { opacity: 1, rotateX: 0, y: 0 },
+        transition: baseTransition
+      };
+    default:
+      return {
+        initial: { opacity: 0, x: "100%" },
+        animate: { opacity: 1, x: "0%" },
+        transition: baseTransition
+      };
+  }
+};
+
+// Walking Model Component with parallax animation
 const WalkingModel = ({ 
   model, 
   isActive,
   isExiting,
-  direction,
 }: { 
   model: typeof models[0]; 
   isActive: boolean;
   isExiting: boolean;
-  direction: "enter" | "exit";
 }) => {
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
   const modelRef = useRef<HTMLDivElement>(null);
+  
+  const parallax = getParallaxAnimation(model.parallaxEffect, isActive, isExiting);
 
   useEffect(() => {
     if (!modelRef.current) return;
     
     if (isActive && !isExiting) {
-      // Walking in animation
+      // Entry animation with GSAP for smooth effect
       gsap.fromTo(
         modelRef.current,
+        parallax.initial || { x: "100%", opacity: 0 },
         {
-          x: "100%",
-          scale: 0.8,
-          opacity: 0,
-          rotateY: -15,
-        },
-        {
-          x: "0%",
-          scale: 1,
-          opacity: 1,
-          rotateY: 0,
-          duration: 1.5,
+          ...parallax.animate,
+          duration: (parallax.transition as any)?.duration || 1.5,
           ease: "power3.out",
         }
       );
 
-      // Subtle walking sway
+      // Subtle breathing animation
       gsap.to(modelRef.current, {
-        y: "-10px",
-        duration: 0.6,
+        scale: 1.02,
+        duration: 3,
         yoyo: true,
-        repeat: 2,
+        repeat: -1,
         ease: "sine.inOut",
-        delay: 0.3,
+        delay: 1.5,
       });
     } else if (isExiting) {
-      // Walking out animation
       gsap.to(modelRef.current, {
         x: "-100%",
         scale: 0.8,
@@ -330,19 +501,11 @@ const WalkingModel = ({
     <div
       ref={modelRef}
       className="absolute inset-0"
-      style={{ perspective: "1200px" }}
+      style={{ perspective: "1200px", transformStyle: "preserve-3d" }}
     >
-      {/* Model Image with walking effect */}
+      {/* Model Image with parallax effect */}
       <motion.div
         className="relative w-full h-full overflow-hidden"
-        animate={{
-          scale: [1, 1.02, 1],
-        }}
-        transition={{
-          duration: 6,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
       >
         <img
           src={model.image}
@@ -360,6 +523,23 @@ const WalkingModel = ({
             duration: 3,
             delay: 0.5,
             ease: "easeInOut",
+          }}
+        />
+        
+        {/* Parallax overlay effect */}
+        <motion.div
+          className="absolute inset-0"
+          animate={{
+            background: [
+              "radial-gradient(circle at 30% 50%, rgba(212, 184, 106, 0.1) 0%, transparent 60%)",
+              "radial-gradient(circle at 70% 50%, rgba(212, 184, 106, 0.15) 0%, transparent 60%)",
+              "radial-gradient(circle at 30% 50%, rgba(212, 184, 106, 0.1) 0%, transparent 60%)",
+            ]
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut"
           }}
         />
       </motion.div>
@@ -427,27 +607,31 @@ export const HeroSection = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [exitingIndex, setExitingIndex] = useState<number | null>(null);
-  const [isMuted, setIsMuted] = useState(true);
-  const [showShopPanel, setShowShopPanel] = useState(false);
   const [brandZoomed, setBrandZoomed] = useState(false);
   
   const { scrollY } = useScroll();
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
   const parallaxY = useTransform(scrollY, [0, 500], [0, 150]);
+  const parallaxScale = useTransform(scrollY, [0, 500], [1, 1.2]);
+  const parallaxRotate = useTransform(scrollY, [0, 500], [0, 5]);
 
-  // Diamond sparkles
+  // Diamond sparkles - more sparkles for luxury feel
   const sparkles = useMemo(() => [
     { delay: 0, x: "25%", y: "30%" },
-    { delay: 0.5, x: "70%", y: "25%" },
-    { delay: 1, x: "80%", y: "45%" },
-    { delay: 1.5, x: "15%", y: "50%" },
-    { delay: 2, x: "60%", y: "65%" },
-    { delay: 2.5, x: "35%", y: "40%" },
-    { delay: 3, x: "85%", y: "35%" },
-    { delay: 3.5, x: "10%", y: "35%" },
+    { delay: 0.3, x: "70%", y: "25%" },
+    { delay: 0.6, x: "80%", y: "45%" },
+    { delay: 0.9, x: "15%", y: "50%" },
+    { delay: 1.2, x: "60%", y: "65%" },
+    { delay: 1.5, x: "35%", y: "40%" },
+    { delay: 1.8, x: "85%", y: "35%" },
+    { delay: 2.1, x: "10%", y: "35%" },
+    { delay: 2.4, x: "45%", y: "20%" },
+    { delay: 2.7, x: "75%", y: "60%" },
+    { delay: 3.0, x: "20%", y: "70%" },
+    { delay: 3.3, x: "90%", y: "25%" },
   ], []);
 
-  // Auto-rotate models like a runway show with walking effect
+  // Auto-rotate models with faster timing for 20 models
   useEffect(() => {
     const interval = setInterval(() => {
       setExitingIndex(activeIndex);
@@ -455,7 +639,7 @@ export const HeroSection = () => {
         setActiveIndex((prev) => (prev + 1) % models.length);
         setExitingIndex(null);
       }, 1200);
-    }, 5000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, [activeIndex]);
@@ -520,19 +704,12 @@ export const HeroSection = () => {
     }
   }, [brandZoomed]);
 
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-
   return (
     <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
-      {/* Video Background with Parallax */}
+      {/* Video Background with Enhanced Parallax */}
       <motion.div 
         className="absolute inset-0 z-0"
-        style={{ y: parallaxY }}
+        style={{ y: parallaxY, scale: parallaxScale, rotate: parallaxRotate }}
       >
         <video
           ref={videoRef}
@@ -546,7 +723,7 @@ export const HeroSection = () => {
         <div className="absolute inset-0 bg-black/50" />
       </motion.div>
 
-      {/* Background Models Slideshow with Walking Animation */}
+      {/* Background Models Slideshow with Parallax Animation */}
       <div className="absolute inset-0 z-[1]">
         {models.map((model, index) => (
           <WalkingModel
@@ -554,7 +731,6 @@ export const HeroSection = () => {
             model={model}
             isActive={index === activeIndex}
             isExiting={index === exitingIndex}
-            direction={index === activeIndex ? "enter" : "exit"}
           />
         ))}
         
@@ -562,28 +738,29 @@ export const HeroSection = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/30 z-10" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/40 z-10" />
         
-        {/* Golden ambient glow */}
+        {/* Animated golden ambient glow */}
         <motion.div 
           className="absolute inset-0 z-10"
-          style={{
-            background: "radial-gradient(ellipse at 60% 50%, rgba(212, 184, 106, 0.15) 0%, transparent 50%)"
+          animate={{
+            background: [
+              "radial-gradient(ellipse at 60% 50%, rgba(212, 184, 106, 0.15) 0%, transparent 50%)",
+              "radial-gradient(ellipse at 40% 50%, rgba(212, 184, 106, 0.2) 0%, transparent 50%)",
+              "radial-gradient(ellipse at 60% 50%, rgba(212, 184, 106, 0.15) 0%, transparent 50%)",
+            ]
           }}
-          animate={{ 
-            opacity: [0.3, 0.6, 0.3],
-          }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
 
-      {/* Diamond Sparkles */}
+      {/* Diamond Sparkles - More sparkles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-20">
         {sparkles.map((sparkle, i) => (
           <DiamondSparkle key={i} {...sparkle} />
         ))}
       </div>
 
-      {/* Model Indicator Dots */}
-      <div className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2">
+      {/* Model Indicator Dots - Scrollable for 20 models */}
+      <div className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-1.5 max-h-[60vh] overflow-y-auto scrollbar-hide">
         {models.map((model, index) => (
           <motion.button
             key={model.id}
@@ -612,7 +789,7 @@ export const HeroSection = () => {
           className="h-full bg-gradient-to-r from-amber-500 to-amber-600"
           initial={{ width: "0%" }}
           animate={{ width: "100%" }}
-          transition={{ duration: 5, ease: "linear" }}
+          transition={{ duration: 4, ease: "linear" }}
           key={activeIndex}
         />
       </div>
