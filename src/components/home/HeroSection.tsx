@@ -238,117 +238,176 @@ const ShopHotspot = ({
   );
 };
 
-// Model slide with walking animation
-const ModelSlide = ({ 
+// Walking Model Component with runway animation
+const WalkingModel = ({ 
   model, 
   isActive,
+  isExiting,
+  direction,
 }: { 
   model: typeof models[0]; 
-  isActive: boolean; 
+  isActive: boolean;
+  isExiting: boolean;
+  direction: "enter" | "exit";
 }) => {
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
+  const modelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!modelRef.current) return;
+    
+    if (isActive && !isExiting) {
+      // Walking in animation
+      gsap.fromTo(
+        modelRef.current,
+        {
+          x: "100%",
+          scale: 0.8,
+          opacity: 0,
+          rotateY: -15,
+        },
+        {
+          x: "0%",
+          scale: 1,
+          opacity: 1,
+          rotateY: 0,
+          duration: 1.5,
+          ease: "power3.out",
+        }
+      );
+
+      // Subtle walking sway
+      gsap.to(modelRef.current, {
+        y: "-10px",
+        duration: 0.6,
+        yoyo: true,
+        repeat: 2,
+        ease: "sine.inOut",
+        delay: 0.3,
+      });
+    } else if (isExiting) {
+      // Walking out animation
+      gsap.to(modelRef.current, {
+        x: "-100%",
+        scale: 0.8,
+        opacity: 0,
+        rotateY: 15,
+        duration: 1.2,
+        ease: "power3.in",
+      });
+    }
+  }, [isActive, isExiting]);
+
+  if (!isActive && !isExiting) return null;
 
   return (
-    <AnimatePresence mode="wait">
-      {isActive && (
-        <motion.div
-          key={model.id}
-          className="absolute inset-0"
-          initial={{ 
-            x: "100%",
-            scale: 0.9,
-            opacity: 0 
-          }}
-          animate={{ 
-            x: 0,
-            scale: 1,
-            opacity: 1 
-          }}
-          exit={{ 
-            x: "-100%",
-            scale: 0.9,
-            opacity: 0 
-          }}
-          transition={{ 
-            duration: 1.2, 
-            ease: [0.25, 0.1, 0.25, 1] 
-          }}
-        >
-          {/* Model Image with Ken Burns effect */}
-          <motion.img
-            src={model.image}
-            alt={`${model.name} - ${model.collection}`}
-            className="w-full h-full object-cover object-center"
-            initial={{ scale: 1.15 }}
-            animate={{ 
-              scale: 1,
-              x: [0, -20, 0],
-            }}
-            transition={{ 
-              scale: { duration: 6, ease: "linear" },
-              x: { duration: 6, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }
-            }}
-          />
+    <div
+      ref={modelRef}
+      className="absolute inset-0"
+      style={{ perspective: "1200px" }}
+    >
+      {/* Model Image with walking effect */}
+      <motion.div
+        className="relative w-full h-full overflow-hidden"
+        animate={{
+          scale: [1, 1.02, 1],
+        }}
+        transition={{
+          duration: 6,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      >
+        <img
+          src={model.image}
+          alt={`${model.name} - ${model.collection}`}
+          className="w-full h-full object-cover object-center"
+        />
 
-          {/* Shop the Look Hotspots */}
-          <div className="hidden md:block">
-            {model.hotspots.map((hotspot) => (
+        {/* Dramatic lighting sweep */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+          animate={{
+            x: ["-100%", "200%"],
+          }}
+          transition={{
+            duration: 3,
+            delay: 0.5,
+            ease: "easeInOut",
+          }}
+        />
+      </motion.div>
+
+      {/* Shop the Look Hotspots */}
+      <div className="hidden md:block">
+        <AnimatePresence>
+          {isActive && !isExiting && model.hotspots.map((hotspot, index) => (
+            <motion.div
+              key={hotspot.id}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0 }}
+              transition={{ delay: 1.5 + index * 0.2 }}
+            >
               <ShopHotspot
-                key={hotspot.id}
                 hotspot={hotspot}
                 isActive={activeHotspot === hotspot.id}
                 onHover={() => setActiveHotspot(hotspot.id)}
                 onLeave={() => setActiveHotspot(null)}
               />
-            ))}
-          </div>
-          
-          {/* Model info overlay */}
-          <motion.div
-            className="absolute bottom-32 right-8 md:right-16 text-right z-20"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-          >
-            <p className="text-xs tracking-luxury uppercase text-amber-400 mb-2 font-sans">
-              {model.collection}
-            </p>
-            <p className="text-sm text-white/70 font-sans font-light max-w-xs">
-              {model.description}
-            </p>
-          </motion.div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+      
+      {/* Model info overlay */}
+      <motion.div
+        className="absolute bottom-32 right-8 md:right-16 text-right z-20"
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: isExiting ? 0 : 1, x: isExiting ? 50 : 0 }}
+        transition={{ delay: 1, duration: 0.6 }}
+      >
+        <p className="text-xs tracking-luxury uppercase text-amber-400 mb-2 font-sans">
+          {model.collection}
+        </p>
+        <p className="text-sm text-white/70 font-sans font-light max-w-xs">
+          {model.description}
+        </p>
+      </motion.div>
 
-          {/* Shop the Look badge - Mobile */}
-          <motion.div
-            className="absolute top-24 right-4 md:hidden z-30"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
-          >
-            <Link
-              to="/jewellery"
-              className="flex items-center gap-2 bg-amber-500/90 backdrop-blur-sm px-4 py-2 text-black text-xs uppercase tracking-wide"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              Shop Look
-            </Link>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+      {/* Shop the Look badge - Mobile */}
+      <motion.div
+        className="absolute top-24 right-4 md:hidden z-30"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.5 }}
+      >
+        <Link
+          to="/jewellery"
+          className="flex items-center gap-2 bg-amber-500/90 backdrop-blur-sm px-4 py-2 text-black text-xs uppercase tracking-wide"
+        >
+          <ShoppingBag className="w-4 h-4" />
+          Shop Look
+        </Link>
+      </motion.div>
+    </div>
   );
 };
 
 export const HeroSection = () => {
   const ref = useRef<HTMLElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
+  const brandRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [exitingIndex, setExitingIndex] = useState<number | null>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [showShopPanel, setShowShopPanel] = useState(false);
+  const [brandZoomed, setBrandZoomed] = useState(false);
   
   const { scrollY } = useScroll();
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+  const parallaxY = useTransform(scrollY, [0, 500], [0, 150]);
 
   // Diamond sparkles
   const sparkles = useMemo(() => [
@@ -362,18 +421,31 @@ export const HeroSection = () => {
     { delay: 3.5, x: "10%", y: "35%" },
   ], []);
 
-  // Auto-rotate models like a runway show
+  // Auto-rotate models like a runway show with walking effect
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % models.length);
-    }, 6000);
+      setExitingIndex(activeIndex);
+      setTimeout(() => {
+        setActiveIndex((prev) => (prev + 1) % models.length);
+        setExitingIndex(null);
+      }, 1200);
+    }, 5000);
 
     return () => clearInterval(interval);
+  }, [activeIndex]);
+
+  // Brand zoom animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBrandZoomed(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
     if (textRef.current) {
-      const tl = gsap.timeline({ delay: 0.5 });
+      const tl = gsap.timeline({ delay: 0.8 });
       
       tl.fromTo(
         ".hero-subtitle",
@@ -401,6 +473,27 @@ export const HeroSection = () => {
     }
   }, []);
 
+  // Brand zoom in effect
+  useEffect(() => {
+    if (brandRef.current && brandZoomed) {
+      gsap.fromTo(
+        brandRef.current,
+        {
+          scale: 3,
+          opacity: 0,
+          y: 100,
+        },
+        {
+          scale: 1,
+          opacity: 1,
+          y: 0,
+          duration: 2,
+          ease: "power4.out",
+        }
+      );
+    }
+  }, [brandZoomed]);
+
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
@@ -410,8 +503,11 @@ export const HeroSection = () => {
 
   return (
     <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
-      {/* Video Background */}
-      <div className="absolute inset-0 z-0">
+      {/* Video Background with Parallax */}
+      <motion.div 
+        className="absolute inset-0 z-0"
+        style={{ y: parallaxY }}
+      >
         <video
           ref={videoRef}
           src={runwayVideo}
@@ -419,18 +515,20 @@ export const HeroSection = () => {
           muted
           loop
           playsInline
-          className="w-full h-full object-cover opacity-40"
+          className="w-full h-full object-cover opacity-40 scale-110"
         />
         <div className="absolute inset-0 bg-black/50" />
-      </div>
+      </motion.div>
 
-      {/* Background Models Slideshow */}
+      {/* Background Models Slideshow with Walking Animation */}
       <div className="absolute inset-0 z-[1]">
         {models.map((model, index) => (
-          <ModelSlide
+          <WalkingModel
             key={model.id}
             model={model}
             isActive={index === activeIndex}
+            isExiting={index === exitingIndex}
+            direction={index === activeIndex ? "enter" : "exit"}
           />
         ))}
         
@@ -537,7 +635,13 @@ export const HeroSection = () => {
         {models.map((model, index) => (
           <motion.button
             key={model.id}
-            onClick={() => setActiveIndex(index)}
+            onClick={() => {
+              setExitingIndex(activeIndex);
+              setTimeout(() => {
+                setActiveIndex(index);
+                setExitingIndex(null);
+              }, 1200);
+            }}
             className={`w-2 h-2 rounded-full transition-all duration-300 ${
               index === activeIndex
                 ? "bg-amber-500 scale-150"
@@ -556,7 +660,7 @@ export const HeroSection = () => {
           className="h-full bg-gradient-to-r from-amber-500 to-amber-600"
           initial={{ width: "0%" }}
           animate={{ width: "100%" }}
-          transition={{ duration: 6, ease: "linear" }}
+          transition={{ duration: 5, ease: "linear" }}
           key={activeIndex}
         />
       </div>
@@ -577,12 +681,15 @@ export const HeroSection = () => {
             <span className="h-px w-12 bg-amber-400" />
           </div>
 
-          {/* Animated Title */}
+          {/* Animated Title with Brand Zoom */}
           <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal leading-[1.1] mb-8 md:mb-10 text-white overflow-hidden">
             <span className="hero-title-line block">
               Live The
             </span>
-            <span className="hero-title-line block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500">
+            <span 
+              ref={brandRef}
+              className="hero-title-line block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500"
+            >
               OAK & ASH
             </span>
             <span className="hero-title-line block mt-2 italic">

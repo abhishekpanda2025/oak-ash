@@ -10,7 +10,9 @@ import { Testimonials } from "@/components/home/Testimonials";
 import { PromiseSection } from "@/components/home/PromiseSection";
 import { NewsletterPopup } from "@/components/home/NewsletterPopup";
 import { PageTransition } from "@/components/animations/PageTransition";
-import { PageFlipSection } from "@/components/animations/SectionTransition";
+import { LookbookGallery } from "@/components/lookbook/LookbookGallery";
+import { VirtualTryOn } from "@/components/tryon/VirtualTryOn";
+import { GSAPSection, TrailingCursor } from "@/components/animations/GSAPParallax";
 
 const Index = () => {
   return (
@@ -19,32 +21,39 @@ const Index = () => {
         <Header />
         <LocalCartDrawer />
         <NewsletterPopup />
+        <TrailingCursor />
+        <VirtualTryOn />
+        
         <main>
           <HeroSection />
           
-          <PageFlipSection index={1}>
+          <GSAPSection index={1}>
             <FeaturedProducts />
-          </PageFlipSection>
+          </GSAPSection>
           
-          <PageFlipSection index={2}>
+          <GSAPSection index={2}>
             <CraftingVideoSection />
-          </PageFlipSection>
+          </GSAPSection>
           
-          <PageFlipSection index={3}>
+          <GSAPSection index={3}>
+            <LookbookGallery />
+          </GSAPSection>
+          
+          <GSAPSection index={4}>
             <CraftsmanshipSection />
-          </PageFlipSection>
+          </GSAPSection>
           
-          <PageFlipSection index={4}>
+          <GSAPSection index={5}>
             <CollectionShowcase />
-          </PageFlipSection>
+          </GSAPSection>
           
-          <PageFlipSection index={5}>
+          <GSAPSection index={6}>
             <Testimonials />
-          </PageFlipSection>
+          </GSAPSection>
           
-          <PageFlipSection index={6}>
+          <GSAPSection index={7}>
             <PromiseSection />
-          </PageFlipSection>
+          </GSAPSection>
         </main>
         <Footer />
       </div>
